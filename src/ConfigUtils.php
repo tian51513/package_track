@@ -16,8 +16,8 @@ class ConfigUtils
      */
     public static $carrierData = [
         'AuPost'      => ['api' => 'AupostTrackRequest', 'carrier_id' => '1151', 'valid_str' => 'Shipping information approved by Australia Post', 'over_str' => 'Delivered', 'carrier_code' => 'AuPost'],
-        'DePost'      => ['api' => 'DepostTrackRequest', 'carrier_id' => false, 'valid_str' => '', 'over_str' => 'zugestellt', 'carrier_code' => 'DePost'],
-        'DHL'         => ['api' => 'DhlTrackRequest', 'carrier_id' => '100001', 'valid_str' => 'DHL已取件', 'over_str' => '已派送-签收人', 'carrier_code' => 'DHL'],
+        'DePost'      => ['api' => 'DepostTrackRequest', 'carrier_id' => false, 'valid_str' => true, 'over_str' => ['zugestellt', 'delivered '], 'carrier_code' => 'DePost'],
+        'DHL'         => ['api' => 'DhlTrackRequest', 'carrier_id' => '100001', 'valid_str' => ['DHL已取件', 'Shipment picked up'], 'over_str' => ['已派送-签收人', 'Delivered'], 'carrier_code' => 'DHL'],
         'DHL(DE)'     => ['api' => 'DhldeTrackRequest', 'carrier_id' => '7041', 'valid_str' => ['The shipment has been processed in the parcel center', 'The shipment has arrived in the destination country'], 'over_str' => 'delivered', 'carrier_code' => 'DHL(DE)'],
         'DPD'         => ['api' => 'DpdTrackRequest', 'carrier_id' => '100007', 'valid_str' => 'In transit', 'over_str' => 'Delivered', 'carrier_code' => 'DPD'],
         'DPD(UK)'     => ['api' => 'DpdukTrackRequest', 'carrier_id' => '100010', 'valid_str' => 'on its way to our depot', 'over_str' => 'delivered', 'carrier_code' => 'DPD(UK)'],
@@ -40,11 +40,38 @@ class ConfigUtils
      * @param    array                    $data [description]
      * @return   [type]                         [description]
      */
-    public function log($data = [], $msg='')
+    public static function log($data = [], $msg = '')
     {
-        $savepath = dirname(__FILE__).'/error_' . date('Ymd') . '.log';
+        $savepath = dirname(__FILE__) . '/error_' . date('Ymd') . '.log';
         $now      = date('Y-m-d H:i:s');
         $log      = json_encode($data, JSON_UNESCAPED_UNICODE);
-        error_log("[{$now}] " . '---'. $msg . "\r\n\r\n{$log}\r\n\r\n", 3, $savepath);
+        error_log("[{$now}] " . '---' . $msg . "\r\n\r\n{$log}\r\n\r\n", 3, $savepath);
+    }
+    /**
+     * [checkStrExist 判断字符串是否存在]
+     * @Author   Tinsy
+     * @DateTime 2018-04-27T13:50:45+0800
+     * @param    [type]                   $check_str  [待检测字符串]
+     * @param    [type]                   $search_str [匹配数据]
+     * @return   [type]                               [description]
+     */
+    public static function checkStrExist($check_str, $search_str)
+    {
+        $flag = false;
+        if ($check_str && $search_str) {
+            if (is_array($search_str)) {
+                foreach ($search_str as $str) {
+                    if (strpos($check_str, $str) !== false) {
+                        $flag = true;
+                        break;
+                    }
+                }
+            } elseif (is_string($search_str)) {
+                $flag = strpos($check_str, $search_str) !== false;
+            } elseif (is_bool($search_str)) {
+                $flag = $search_str;
+            }
+        }
+        return $flag;
     }
 }

@@ -87,11 +87,11 @@ class P2pTrackRequest implements TrackRequest
                         $query    = QueryList::html($node['track_node']);
                         $remark   = $query->find('td:first')->text();
                         $event    = $query->find('td:eq(1)')->text();
-                        $is_valid = $is_valid || strpos($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         return ['remark' => $remark, 'event' => $event];
                     })->toArray();
                     $current_track = current($track_log);
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

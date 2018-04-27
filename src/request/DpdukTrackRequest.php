@@ -121,10 +121,10 @@ class DpdukTrackRequest implements TrackRequest
                             'remark' => $log['eventDate'] . ' ' . $log['eventLocation'],
                             'event'  => $log['eventText'],
                         ];
-                        $is_valid = $is_valid || strpos($log['eventText'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['eventText'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                     }
                     $current_track = current($track_log);
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

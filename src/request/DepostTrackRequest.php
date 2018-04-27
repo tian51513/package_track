@@ -84,7 +84,7 @@ class DepostTrackRequest implements TrackRequest
             $current_track = QueryList::html($html)->find('td.grey')->text();
             if ($current_track) {
                 $is_valid    = true;
-                $is_over     = strpos($current_track, ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                $is_over     = ConfigUtils::checkStrExist($current_track, ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                 $trackData[] = [
                     'track_code'   => $track_code,
                     'carrier_code' => $this->carrierCode,

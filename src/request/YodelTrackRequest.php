@@ -92,11 +92,11 @@ class YodelTrackRequest implements TrackRequest
                             'remark' => $item['date'] . ' ' . $item['location'],
                             'event'  => $item['event'],
                         ];
-                        $is_valid = $is_valid || strpos($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         return $item;
                     })->toArray();
                     $current_track = current($container['track_data']);
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

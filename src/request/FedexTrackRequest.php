@@ -100,12 +100,12 @@ class FedexTrackRequest implements TrackRequest
                                 'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['scanLocation'],
                                 'event'  => $log['status'] . $log['scanDetails'],
                             ];
-                            $is_valid = $is_valid || strpos($log['scanDetails'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['scanDetails'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         }
                         $current_track  = current($track_log);
                         $invalid_status = ['托运资讯发送给FedEx', '已取件'];
                         $is_valid       = !in_array($current_track['event'], $invalid_status);
-                        $is_over        = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                        $is_over        = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                         $trackData[]    = [
                             'track_code'   => $package['trackingNbr'],
                             'carrier_code' => $this->carrierCode,

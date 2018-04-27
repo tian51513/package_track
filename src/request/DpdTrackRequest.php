@@ -88,12 +88,12 @@ class DpdTrackRequest implements TrackRequest
                             'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['city'],
                             'event'  => $log['contents'][0]['label'],
                         ];
-                        $is_valid = $is_valid || strpos($log['contents'][0]['label'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['contents'][0]['label'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                     }
                     krsort($track_log);
                     $track_log     = array_values($track_log);
                     $current_track = current($track_log);
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

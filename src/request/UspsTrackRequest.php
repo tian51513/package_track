@@ -141,10 +141,10 @@ class UspsTrackRequest implements TrackRequest
                                 } else {
                                     $track_log[] = ['remark' => $date . ' ' . $node[2]['log'], 'event' => $node[1]['log']];
                                 }
-                                $is_valid = $is_valid || strpos($node[1]['log'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                                $is_valid = $is_valid || ConfigUtils::checkStrExist($node[1]['log'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                             }
                             $current_track = current($track_log);
-                            $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                            $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                             $trackData[]   = [
                                 'track_code'   => $item['track_code'],
                                 'carrier_code' => $this->carrierCode,

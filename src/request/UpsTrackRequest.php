@@ -107,11 +107,11 @@ class UpsTrackRequest implements TrackRequest
                         $location       = str_replace(["\n", "\t", "\r", '            '], '', $location);
                         $item['remark'] = $query->find('td:eq(1)')->text() . ' ' . $query->find('td:eq(2)')->text() . ' ' . $location;
                         $item['event']  = $query->find('td:eq(3)')->text();
-                        $is_valid       = $is_valid || in_array($item['event'], $valid_status);
+                        $is_valid       = $is_valid || ConfigUtils::checkStrExist($item['event'], $valid_status);
                         return $item;
                     })->toArray();
                     $current_track = current($track_log);
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

@@ -95,11 +95,11 @@ class DefaultTrackRequest implements TrackRequest
                                     'remark' => $log['a'] . ' ' . $log['c'],
                                     'event'  => $log['z'],
                                 ];
-                                $flag     = is_array($carrier['valid_str']) ? in_array($log['z'], $carrier['valid_str']) : strpos($log['z'], $carrier['valid_str']) !== false;
+                                $flag     = ConfigUtils::checkStrExist($log['z'], $carrier['valid_str']);
                                 $is_valid = $is_valid || $flag;
                             }
                             $current_info = $item['track']['z0']['z'];
-                            $is_over      = is_array($carrier['over_str']) ? in_array($current_info, $carrier['over_str']) : strpos($current_info, $carrier['over_str']) !== false;
+                            $is_over      = ConfigUtils::checkStrExist($current_info, $carrier['over_str']);
                             $trackData[]  = [
                                 'track_code'   => $item['no'],
                                 'carrier_code' => $carrier['carrier_code'],

@@ -113,12 +113,12 @@ class ParcelforceTrackRequest implements TrackRequest
                 $query          = QueryList::html($node['track_item']);
                 $item['remark'] = $query->find('td:eq(0)')->text() . ' ' . $query->find('td:eq(1)')->text();
                 $item['event']  = $query->find('td:eq(2)')->text();
-                $is_valid       = $is_valid || in_array($item['event'], ConfigUtils::$carrierData['Parcelforce']['valid_str']);
+                $is_valid       = $is_valid || ConfigUtils::checkStrExist($item['event'], ConfigUtils::$carrierData['Parcelforce']['valid_str']);
                 return $item;
             })->toArray();
             if (!empty($track_log)) {
                 $current_track = current($track_log);
-                $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData['Parcelforce']['over_str']) !== false;
+                $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData['Parcelforce']['over_str']);
                 $trackData[]   = [
                     'track_code'   => $track_code,
                     'carrier_code' => $this->carrierCode,

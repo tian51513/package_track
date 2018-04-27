@@ -93,10 +93,10 @@ class AupostTrackRequest implements TrackRequest
                                 'remark' => $log['localeDateTime'] . ' ' . $log['location'],
                                 'event'  => $log['description'],
                             ];
-                            $is_valid = $is_valid || strpos($log['description'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['description'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         }
                         $current_track = current($track_log);
-                        $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                        $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                         $trackData[]   = [
                             'track_code'   => $item['trackingIds'][0],
                             'carrier_code' => $this->carrierCode,

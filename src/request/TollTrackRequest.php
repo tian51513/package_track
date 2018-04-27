@@ -90,11 +90,11 @@ class TollTrackRequest implements TrackRequest
                             'remark' => $log['eventDateTime'] . ' ' . $log['location'],
                             'event'  => $log['eventDescription'],
                         ];
-                        $is_valid = $is_valid || strpos($log['eventDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['eventDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                     }
                     $complete_status = ConfigUtils::$carrierData[$this->carrierCode]['over_str'];
                     $is_valid        = $item['lastEventStatus'] === 'CONNOTE FILE LODGED (E-TRADER)' ? false : $is_valid;
-                    $is_over         = in_array($item['lastEventStatus'], $complete_status);
+                    $is_over         = ConfigUtils::checkStrExist($item['lastEventStatus'], $complete_status);
                     $track_info      = [
                         'current_info' => $item['lastEventStatus'],
                         'is_valid'     => $is_valid,

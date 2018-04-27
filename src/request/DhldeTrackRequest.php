@@ -90,12 +90,12 @@ class DhldeTrackRequest implements TrackRequest
                     ];
                     $is_valid                = false;
                     $container['track_data'] = QueryList::html($container['track_data'])->rules($reg)->query()->getData(function ($item) use (&$is_valid) {
-                        $is_valid = $is_valid || in_array($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         return $item;
                     })->toArray();
                     $current_track = current($container['track_data']);
                     $is_valid      = strpos($current_track['event'], 'sender to DHL electronically') ? false : $is_valid;
-                    $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,

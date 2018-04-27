@@ -20,7 +20,7 @@ class DhlTrackRequest implements TrackRequest
 
     protected $carrierCode = 'DHL';
 
-    protected $apiUrl = 'http://www.cn.dhl.com/shipmentTracking?';
+    protected $apiUrl = 'http://www.cn.dhl.com/shipmentTracking';
 
     protected $method = 'get';
 
@@ -93,10 +93,10 @@ class DhlTrackRequest implements TrackRequest
                                 'remark' => $log['date'] . ' ' . $log['location'],
                                 'event'  => $log['description'],
                             ];
-                            $is_valid = $is_valid || strpos($log['description'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']) !== false;
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['description'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                         }
                         $current_track = current($track_log);
-                        $is_over       = strpos($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']) !== false;
+                        $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
                         $trackData[]   = [
                             'track_code'   => $item['id'],
                             'carrier_code' => $this->carrierCode,
