@@ -28,7 +28,7 @@ class DhlTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'api-key' => $this->apiKey]);
+        $this->client = new Client(['verify' => false]);
     }
 
     /**
