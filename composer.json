@@ -1,7 +1,7 @@
 {
     "name": "tinsy/package_track",
     "description": "package tracking data",
-    "type": "project",
+    "type": "library",
     "keywords": [
         "package",
         "tracking"
