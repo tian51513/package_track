@@ -77,7 +77,7 @@ class DefaultTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [])
+    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
     {
         $carrier_data = array_column(ConfigUtils::$carrierData, null, 'carrier_id');
         foreach ($response as $response_item) {

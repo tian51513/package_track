@@ -84,7 +84,7 @@ class FedexTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [])
+    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
     {
         foreach ($response as $response_item) {
             $response_item = $response_item->getBody()->getContents();

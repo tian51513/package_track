@@ -60,7 +60,7 @@ class PackageTrack
      * @DateTime 2018-04-20T15:01:10+0800
      * @return   [type]                   [description]
      */
-    public function execute($params = [])
+    public function execute($params = [], callable $callback)
     {
         $this->setTrackParams($params);
         $retry_times = 0;
@@ -70,7 +70,7 @@ class PackageTrack
                 break;
             }
             $response = $this->trackRequest->request($this->trackParams);
-            $this->trackRequest->getTrackData($response, $this->trackData, $this->trackParams);
+            $this->trackRequest->getTrackData($response, $this->trackData, $this->trackParams, $callback);
             $retry_times++;
             $this->trackParams ? sleep($this->QueryDuration) : true;
         }
@@ -86,7 +86,7 @@ class PackageTrack
                     $request_name = '\\track\\request\\' . ConfigUtils::$carrierData[$carrier_code]['api'];
                     $trackRequest = new $request_name;
                     $response     = $trackRequest->request($carrier);
-                    $trackRequest->getTrackData($response, $this->trackData, $carrier);
+                    $trackRequest->getTrackData($response, $this->trackData, $carrier, $callback);
                 }
                 $this->trackParams = array_merge($this->trackParams, $carrier);
             }

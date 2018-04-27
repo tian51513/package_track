@@ -100,7 +100,7 @@ class ParcelforceTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [])
+    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
     {
         foreach ($response as $track_code => $response_item) {
             $html = $response_item->getBody()->getContents();
