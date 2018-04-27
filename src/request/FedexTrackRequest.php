@@ -93,6 +93,7 @@ class FedexTrackRequest implements TrackRequest
                 foreach ($response['TrackPackagesResponse']['packageList'] as $package) {
                     if ($package['isSuccessful']) {
                         $track_log = [];
+                        $is_valid = false;
                         foreach ($package['scanEventList'] as $log) {
                             $log['scanDetails'] = $log['scanDetails'] ? '-' . $log['scanDetails'] : '';
                             $track_log[]        = [
