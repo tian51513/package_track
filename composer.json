@@ -1,24 +1,23 @@
 {
-    "name": "tinsy_package_track",
+    "name": "tinsy/package_track",
     "description": "package tracking data",
     "type": "project",
     "keywords": [
         "package",
         "tracking"
     ],
-    "homepage": "http://tinsy.name/",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "tinsy",
-            "email": "eva51513@gmail.com"
-        }
-    ],
     "require": {
         "php": ">=7.0.0",
         "jaeger/querylist": "^4.0",
         "jaeger/querylist-ext-multi": "^1.0"
     },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "rei",
+            "email": "eva51513@gmail.com"
+        }
+    ],
     "autoload":{
         "psr-4":{
             "track\\":"src"
