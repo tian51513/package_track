@@ -63,8 +63,8 @@ class PackageTrack
     public function execute($params = [], callable $callback)
     {
         $this->setTrackParams($params);
-        $retry_times = 0;
         //1.17track 初查
+        $retry_times = 0;
         while ($this->trackParams) {
             if ($retry_times === $this->maxQueryRetry) {
                 break;
@@ -75,7 +75,11 @@ class PackageTrack
             $this->trackParams ? sleep($this->QueryDuration) : true;
         }
         //2.运输商官网 复查
-        if (!empty($this->trackParams)) {
+        $retry_times = 0;
+        while (!empty($this->trackParams)) {
+            if ($retry_times === $this->maxQueryRetry) {
+                break;
+            }
             $carrier_params = [];
             foreach ($this->trackParams as $param) {
                 $carrier_params[$param['carrier_code']][$param['track_code']] = $param;
@@ -90,6 +94,8 @@ class PackageTrack
                 }
                 $this->trackParams = array_merge($this->trackParams, $carrier);
             }
+            $retry_times++;
+            $this->trackParams ? sleep($this->QueryDuration) : true;
         }
         return ['track_fail_params' => $this->trackParams];
         //return ['track_fail_params' => $this->trackParams, 'track_success_data' => $track_data];
