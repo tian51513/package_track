@@ -9,7 +9,6 @@
 namespace track\request;
 
 use GuzzleHttp\Client;
-use track\ConfigUtils;
 
 class RoyalmailTrackRequest implements TrackRequest
 {
@@ -28,7 +27,7 @@ class RoyalmailTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60]);
     }
 
     /**
@@ -56,7 +55,9 @@ class RoyalmailTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
+    public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
+        $trackData = [];
+        call_user_func($callback, $trackData) === false;
     }
 }

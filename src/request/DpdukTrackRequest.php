@@ -10,6 +10,7 @@ namespace track\request;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use track\ConfigUtils;
 
@@ -30,7 +31,7 @@ class DpdukTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['highlander' => true]);
+        $this->client = new Client(['highlander' => true, 'timeout' => 60]);
     }
 
     /**
@@ -77,27 +78,41 @@ class DpdukTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
-        $promises = $results = [];
-        foreach ($params as $param) {
-            try {
-                $query = $this->buildParams($param);
-                if ($query) {
-                    $api_url = sprintf($this->apiUrl, $query['parcel']);
-                    unset($query['parcel']);
-                    $promises[$param['track_code']] = $this->client->getAsync($api_url, $query)->then(
-                        function (ResponseInterface $response) use (&$results, $param) {
-                            $results[$param['track_code']] = $response;
-                        },
-                        function (RequestException $e) use ($param) {
-                            ConfigUtils::log($param, $e->getMessage());
-                        }
-                    );
+        $results     = [];
+        $params_data = [];
+        $params      = array_values($params);
+        $requests    = function ($params) use (&$params_data) {
+            $total = count($params);
+            for ($i = 0; $i < $total; $i++) {
+                $param = $params[$i];
+                try {
+                    $query = $this->buildParams($param);
+                    if ($query) {
+                        $api_url = sprintf($this->apiUrl, $query['parcel']);
+                        unset($query['parcel']);
+                        $params_data[] = $param;
+                        yield function () use ($api_url, $query) {
+                            return $this->client->getAsync($api_url, $query);
+                        };
+                    }
+                } catch (RequestException $e) {
+                    ConfigUtils::log($param, $e->getMessage());
                 }
-            } catch (RequestException $e) {
-                ConfigUtils::log($param, $e->getMessage());
             }
-        }
-        \GuzzleHttp\Promise\unwrap($promises);
+        };
+        $pool = new Pool($this->client, $requests($params), [
+            'concurrency' => TrackRequest::ASYNC_MAX_NUM,
+            'fulfilled'   => function (ResponseInterface $response, $index) use (&$results, &$params_data) {
+                $results[$params_data[$index]['track_code']] = $response;
+            },
+            'rejected'    => function (RequestException $e, $index) use ($params_data) {
+                ConfigUtils::log([], '第' . $index . '个发生了错误');
+                ConfigUtils::log($params_data[$index], $e->getMessage());
+            },
+        ]);
+        // 开始发送请求
+        $promise = $pool->promise();
+        $promise->wait();
         return $results;
     }
     /**
@@ -107,8 +122,9 @@ class DpdukTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
+    public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
+        $trackData = [];
         foreach ($response as $track_code => $response_item) {
             $response_item = $response_item->getBody()->getContents();
             $response_item = json_decode($response_item, true);
@@ -137,5 +153,6 @@ class DpdukTrackRequest implements TrackRequest
                 }
             }
         }
+        call_user_func($callback, $trackData) === false;
     }
 }

@@ -10,6 +10,7 @@ namespace track\request;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use track\ConfigUtils;
 
@@ -28,7 +29,7 @@ class TollTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60]);
     }
 
     /**
@@ -54,19 +55,30 @@ class TollTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
-        $params_data = array_chunk($params, $this->maxCount);
-        $promises    = $results    = [];
-        foreach ($params_data as $params) {
-            $promises[] = $this->client->postAsync($this->apiUrl, $this->buildParams($params))->then(
-                function (ResponseInterface $response) use (&$results) {
-                    $results[] = $response;
-                },
-                function (RequestException $e) use ($params) {
-                    ConfigUtils::log($params, $e->getMessage());
-                }
-            );
-        }
-        \GuzzleHttp\Promise\unwrap($promises);
+        $results  = [];
+        $params   = array_chunk($params, $this->maxCount);
+        $requests = function ($params) {
+            $total = count($params);
+            for ($i = 0; $i < $total; $i++) {
+                $param = $params[$i];
+                yield function () use ($param) {
+                    return $this->client->postAsync($this->apiUrl, $this->buildParams($param));
+                };
+            }
+        };
+        $pool = new Pool($this->client, $requests($params), [
+            'concurrency' => TrackRequest::ASYNC_MAX_NUM,
+            'fulfilled'   => function (ResponseInterface $response, $index) use (&$results, $params) {
+                $results[] = $response;
+            },
+            'rejected'    => function (RequestException $e, $index) use ($params) {
+                ConfigUtils::log([], '第' . $index . '个发生了错误');
+                ConfigUtils::log($params[$index], $e->getMessage());
+            },
+        ]);
+        // 开始发送请求
+        $promise = $pool->promise();
+        $promise->wait();
         return $results;
     }
     /**
@@ -76,8 +88,9 @@ class TollTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
+    public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
+        $trackData = [];
         foreach ($response as $track_code => $response_item) {
             $response_item = $response_item->getBody()->getContents();
             $response_item = json_decode($response_item, true);
@@ -108,5 +121,6 @@ class TollTrackRequest implements TrackRequest
                 }
             }
         }
+        call_user_func($callback, $trackData) === false;
     }
 }

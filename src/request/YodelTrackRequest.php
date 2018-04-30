@@ -9,6 +9,7 @@ namespace track\request;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use QL\QueryList;
 use track\ConfigUtils;
@@ -28,7 +29,7 @@ class YodelTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'allow_redirects' => false]);
+        $this->client = new Client(['verify' => false, 'allow_redirects' => false, 'timeout' => 60]);
     }
 
     /**
@@ -39,18 +40,30 @@ class YodelTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
-        $promises = $results = [];
-        foreach ($params as $param) {
-            $promises[$param['track_code']] = $this->client->getAsync($this->apiUrl . '/' . $param['track_code'])->then(
-                function (ResponseInterface $response) use (&$results, $param) {
-                    $results[$param['track_code']] = $response;
-                },
-                function (RequestException $e) use ($param) {
-                    ConfigUtils::log($param, $e->getMessage());
-                }
-            );
-        }
-        \GuzzleHttp\Promise\unwrap($promises);
+        $results  = [];
+        $params   = array_values($params);
+        $requests = function ($params) {
+            $total = count($params);
+            for ($i = 0; $i < $total; $i++) {
+                $param = $params[$i];
+                yield function () use ($param) {
+                    return $this->client->getAsync($this->apiUrl . '/' . $param['track_code']);
+                };
+            }
+        };
+        $pool = new Pool($this->client, $requests($params), [
+            'concurrency' => TrackRequest::ASYNC_MAX_NUM,
+            'fulfilled'   => function (ResponseInterface $response, $index) use (&$results, $params) {
+                $results[$params[$index]['track_code']] = $response;
+            },
+            'rejected'    => function (RequestException $e, $index) use ($params) {
+                ConfigUtils::log([], '第' . $index . '个发生了错误');
+                ConfigUtils::log($params[$index], $e->getMessage());
+            },
+        ]);
+        // 开始发送请求
+        $promise = $pool->promise();
+        $promise->wait();
         return $results;
     }
 
@@ -71,8 +84,9 @@ class YodelTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
+    public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
+        $trackData = [];
         foreach ($response as $track_code => $page) {
             $html = $page->getBody()->getContents();
             $reg  = [
@@ -109,5 +123,6 @@ class YodelTrackRequest implements TrackRequest
                 }
             });
         }
+        call_user_func($callback, $trackData) === false;
     }
 }

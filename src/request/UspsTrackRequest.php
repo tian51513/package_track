@@ -27,7 +27,7 @@ class UspsTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'allow_redirects' => false]);
+        $this->client = new Client(['verify' => false, 'allow_redirects' => false, 'timeout' => 60]);
     }
 
     /**
@@ -53,7 +53,7 @@ class UspsTrackRequest implements TrackRequest
             ConfigUtils::log($errorInfo, $errorInfo['error']);
         })->start([
             // 最大并发数，这个值可以运行中动态改变。
-            'maxThread' => 10,
+            'maxThread' => TrackRequest::ASYNC_MAX_NUM,
             // 触发curl错误或用户错误之前最大重试次数，超过次数$error指定的回调会被调用。
             'maxTry'    => 3,
             // 全局CURLOPT_*
@@ -111,8 +111,9 @@ class UspsTrackRequest implements TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback)
+    public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
+        $trackData = [];
         foreach ($response as $page) {
             $html = $page; //$page->getBody()->getContents();
             $reg  = ['package_track' => ['.track-bar-container', 'html']];
@@ -159,5 +160,6 @@ class UspsTrackRequest implements TrackRequest
                 }
             });
         }
+        call_user_func($callback, $trackData) === false;
     }
 }

@@ -27,7 +27,7 @@ class PackageTrack
      * [$maxQueryRetry 最大重试次数]
      * @var integer
      */
-    protected $maxQueryRetry = 5;
+    protected $maxQueryRetry = 1;
     /**
      * [$QueryDuration 查询间隔时间]
      * @var integer
@@ -70,7 +70,7 @@ class PackageTrack
                 break;
             }
             $response = $this->trackRequest->request($this->trackParams);
-            $this->trackRequest->getTrackData($response, $this->trackData, $this->trackParams, $callback);
+            $this->trackRequest->getTrackData($response, $this->trackParams, $callback);
             $retry_times++;
             $this->trackParams ? sleep($this->QueryDuration) : true;
         }
@@ -86,11 +86,12 @@ class PackageTrack
                     $request_name = '\\track\\request\\' . ConfigUtils::$carrierData[$carrier_code]['api'];
                     $trackRequest = new $request_name;
                     $response     = $trackRequest->request($carrier);
-                    $trackRequest->getTrackData($response, $this->trackData, $carrier, $callback);
+                    $trackRequest->getTrackData($response, $carrier, $callback);
                 }
                 $this->trackParams = array_merge($this->trackParams, $carrier);
             }
         }
-        return ['track_fail_params' => $this->trackParams, 'track_success_data' => $this->trackData];
+        return ['track_fail_params' => $this->trackParams];
+        //return ['track_fail_params' => $this->trackParams, 'track_success_data' => $track_data];
     }
 }

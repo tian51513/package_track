@@ -10,6 +10,7 @@ namespace track\request;
 
 interface TrackRequest
 {
+    const ASYNC_MAX_NUM = 5;
     /**
      * [request 接口请求]
      * @Author   Tinsy
@@ -31,6 +32,6 @@ interface TrackRequest
      * @param    array                    $response [description]
      * @return   [type]                             [description]
      */
-    public function getTrackData($response = [], &$trackData = [], &$trackParams = [], callable $callback);
+    public function getTrackData($response = [], &$trackParams = [], callable $callback);
 
 }
