@@ -27,7 +27,7 @@ class PackageTrack
      * [$maxQueryRetry 最大重试次数]
      * @var integer
      */
-    protected $maxQueryRetry = 1;
+    protected $maxQueryRetry = 3;
     /**
      * [$QueryDuration 查询间隔时间]
      * @var integer
