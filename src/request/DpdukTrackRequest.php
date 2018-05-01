@@ -133,7 +133,8 @@ class DpdukTrackRequest implements TrackRequest
                     $track_log = [];
                     $is_valid  = false;
                     foreach ($response_item['data'] as $log) {
-                        $track_log[] = [
+                        $log['eventLocation'] = is_array($log['eventLocation']) ? implode(' ', $log['eventLocation']) : $log['eventLocation'];
+                        $track_log[]          = [
                             'remark' => $log['eventDate'] . ' ' . $log['eventLocation'],
                             'event'  => $log['eventText'],
                         ];
