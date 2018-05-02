@@ -59,37 +59,22 @@ class ConfigUtils
     {
         $flag = false;
         if ($check_str && $search_str) {
+            $check_str  = strtolower($check_str);
             if (is_array($search_str)) {
                 foreach ($search_str as $str) {
+                    $str = strtolower($str);
                     if (strpos($check_str, $str) !== false) {
                         $flag = true;
                         break;
                     }
                 }
             } elseif (is_string($search_str)) {
+                $search_str = strtolower($search_str);
                 $flag = strpos($check_str, $search_str) !== false;
             } elseif (is_bool($search_str)) {
                 $flag = $search_str;
             }
         }
         return $flag;
-    }
-
-    /**
-     * [characterToUtf8 字符转换utf8]
-     * @Author   Tinsy
-     * @DateTime 2018-05-02T10:54:28+0800
-     * @param    string                   $character [description]
-     * @return   [type]                              [description]
-     */
-    public static function characterToUtf8($character = '')
-    {
-        if (!empty($character)) {
-            $file_type = mb_detect_encoding($character, ['UTF-8', 'GBK', 'LATIN1', 'BIG5', 'ASCII']);;
-            if ($file_type != 'UTF-8') {
-                $character = mb_convert_encoding($character, 'utf-8', $file_type);
-            }
-        }
-        return $character;
     }
 }

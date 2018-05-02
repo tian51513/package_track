@@ -110,7 +110,7 @@ class TollTrackRequest implements TrackRequest
                     $is_over         = ConfigUtils::checkStrExist($item['lastEventStatus'], $complete_status);
                     $track_info      = [
                         'current_info' => $item['lastEventStatus'],
-                        'is_valid'     => $is_valid,
+                        'is_valid'     => $is_over ? true : $is_valid,
                         'is_over'      => $is_over,
                         'track_code'   => $item['connote'],
                         'carrier_code' => $this->carrierCode,

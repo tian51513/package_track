@@ -129,7 +129,7 @@ class UpsTrackRequest implements TrackRequest
                     $trackData[]   = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,
-                        'is_valid'     => $is_valid,
+                        'is_valid'     => $is_over ? true : $is_valid,
                         'is_over'      => $is_over,
                         'current_info' => $current_track['event'],
                         'track_log'    => $track_log,

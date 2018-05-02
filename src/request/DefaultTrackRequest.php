@@ -116,7 +116,7 @@ class DefaultTrackRequest implements TrackRequest
                             $trackData[]  = [
                                 'track_code'   => $item['no'],
                                 'carrier_code' => $carrier['carrier_code'],
-                                'is_valid'     => $is_valid,
+                                'is_valid'     => $is_over ? true : $is_valid,
                                 'is_over'      => $is_over,
                                 'current_info' => $current_info,
                                 'track_log'    => $track_log,
