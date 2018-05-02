@@ -74,4 +74,22 @@ class ConfigUtils
         }
         return $flag;
     }
+
+    /**
+     * [characterToUtf8 字符转换utf8]
+     * @Author   Tinsy
+     * @DateTime 2018-05-02T10:54:28+0800
+     * @param    string                   $character [description]
+     * @return   [type]                              [description]
+     */
+    public static function characterToUtf8($character = '')
+    {
+        if (!empty($character)) {
+            $file_type = mb_detect_encoding($character, ['UTF-8', 'GBK', 'LATIN1', 'BIG5', 'ASCII']);;
+            if ($file_type != 'UTF-8') {
+                $character = mb_convert_encoding($character, 'utf-8', $file_type);
+            }
+        }
+        return $character;
+    }
 }
