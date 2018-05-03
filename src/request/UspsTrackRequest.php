@@ -8,7 +8,6 @@
 namespace track\request;
 
 use GuzzleHttp\Client;
-use QL\Ext\CurlMulti;
 use QL\QueryList;
 use track\ConfigUtils;
 
@@ -41,47 +40,43 @@ class UspsTrackRequest implements TrackRequest
         $params_data = array_chunk($params, $this->maxCount);
         $results     = [];
         $header      = ['timeout' => 0];
-        $query       = QueryList::use (CurlMulti::class);
         $urls        = [];
         foreach ($params_data as $params) {
             $urls[] = $this->apiUrl . $this->buildParams($params);
-            // $results[] = QueryList::get($this->apiUrl, $this->buildParams($params), $header)->getHtml();
         }
-        $query->curlMulti($urls)->success(function (QueryList $ql, CurlMulti $curl, $response) use (&$results) {
-            $results[] = $response['body'];
-        })->error(function ($errorInfo, CurlMulti $curl) {
-            ConfigUtils::log($errorInfo, $errorInfo['error']);
-        })->start([
-            // 最大并发数，这个值可以运行中动态改变。
-            'maxThread' => TrackRequest::ASYNC_MAX_NUM,
-            // 触发curl错误或用户错误之前最大重试次数，超过次数$error指定的回调会被调用。
-            'maxTry'    => 3,
-            // 全局CURLOPT_*
-            'opt'       => [
-                CURLOPT_TIMEOUT        => 0,
-                CURLOPT_CONNECTTIMEOUT => 1,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HTTPHEADER     => $header,
-            ],
-            // 缓存选项很容易被理解，缓存使用url来识别。如果使用缓存类库不会访问网络而是直接返回缓存。
-            'cache'     => ['enable' => false, 'compress' => false, 'dir' => null, 'expire' => 86400, 'verifyPost' => false],
-        ]);
-        // TODO 重定向
-        // $promises = $results = [];
-        // foreach ($params_data as $key => $params) {
-        //     $promises[] = $this->client->getAsync($this->apiUrl, $this->buildParams($params))->then(
-        //         function (ResponseInterface $response) use (&$results) {
-        //             $results[] = $response;
-        //         },
-        //         function (RequestException $e) {
-        //             //TODO 错误日志
-        //             echo $e->getMessage() . "\n";
-        //             echo $e->getRequest()->getMethod();
-        //         }
-        //     );
-        // }
-        // \GuzzleHttp\Promise\unwrap($promises);
-
+        $curl            = (new \Ares333\Curl\Toolkit())->getCurl();
+        $curl->maxThread = TrackRequest::ASYNC_MAX_NUM;
+        $curl->maxTry    = 0;
+        $curl->opt       = [
+            CURLOPT_TIMEOUT        => 0,
+            CURLOPT_CONNECTTIMEOUT => 1,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $header,
+        ];
+        $curl->cache  = ['enable' => false, 'compress' => false, 'dir' => null, 'expire' => 86400, 'verifyPost' => false];
+        $curl->onInfo = function () {};
+        $curl->onFail = function () {};
+        $total_count  = count($urls);
+        $curl->onTask = function ($curl) use ($urls, &$results, &$total_count) {
+            if ($total_count == 0) {
+                return;
+            }
+            foreach ($urls as $url) {
+                $total_count--;
+                $curl->add(
+                    array(
+                        'opt' => array(
+                            CURLOPT_URL => $url,
+                        ),
+                    ), function ($response, $args) use (&$results) {
+                        $results[] = $response['body'];
+                    }, function ($response, $args) {
+                        ConfigUtils::log($response, $response['errorMsg']);
+                    }
+                );
+            }
+        };
+        $curl->start();
         return $results;
     }
 

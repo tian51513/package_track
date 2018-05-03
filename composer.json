@@ -10,7 +10,7 @@
     "require": {
         "php": ">=7.0.0",
         "jaeger/querylist": "^4.0",
-        "jaeger/querylist-curl-multi": "^4.0"
+        "ares333/php-curl": "^4.2"
     },
     "license": "MIT",
     "authors": [
