@@ -30,22 +30,21 @@ class WordFilter
      * [initKeyIndex 初始化]
      * @Author   Tinsy
      * @DateTime 2018-05-03T11:55:34+0800
-     * @param    string                   $check_str [description]
      * @param    array                    $key_data  [description]
      */
-    public function initKeyIndex($check_str ='', $key_data=[]){
+    public function initKeyIndex($key_data = [])
+    {
         //实例trie类
-        $initWord        = new WordInit($key_data);
-        self::$keyMap    = $initWord::$keyMap;
-        self::$testedStr = $str;
+        $initWord     = new WordInit($key_data);
+        self::$keyMap = $initWord::$keyMap;
     }
     /**
      * [setStr 更新待测字符串]
-     * @param [type] $str [description]
+     * @param [type] $check_str [description]
      */
-    public static function setStr($str)
+    public static function setStr($check_str = '')
     {
-        self::$testedStr = $str;
+        self::$testedStr = $check_str;
         self::_getChars(true);
         self::$sensIndex = array();
         self::$sensMap   = array();
@@ -55,7 +54,7 @@ class WordFilter
      * @param  [type]  $matchType [匹配规则 1：最小匹配 2：最大匹配]
      * @return boolean            [description]
      */
-    public static function isContaint($str = '', $matchType = 1)
+    public static function isContaint($matchType = 1)
     {
         $flag    = false;
         $charArr = self::_getChars();
