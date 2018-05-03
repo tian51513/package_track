@@ -22,14 +22,22 @@ class WordFilter
     private static $passBreak    = false;
     /**
      * [__construct 初始化类]
-     * @param string $str [待测文本]
      */
-    public function __construct($str = '', $key_data = [])
+    public function __construct()
     {
+    }
+    /**
+     * [initKeyIndex 初始化]
+     * @Author   Tinsy
+     * @DateTime 2018-05-03T11:55:34+0800
+     * @param    string                   $check_str [description]
+     * @param    array                    $key_data  [description]
+     */
+    public function initKeyIndex($check_str ='', $key_data=[]){
         //实例trie类
         $initWord        = new WordInit($key_data);
-        self::$testedStr = $str;
         self::$keyMap    = $initWord::$keyMap;
+        self::$testedStr = $str;
     }
     /**
      * [setStr 更新待测字符串]
