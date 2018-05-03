@@ -42,10 +42,10 @@ class WordFilter
      * [setStr 更新待测字符串]
      * @param [type] $check_str [description]
      */
-    public static function setStr($check_str = '')
+    public static function setStr($check_str = '', $is_update = true)
     {
         self::$testedStr = $check_str;
-        self::_getChars(true);
+        self::_getChars($is_update);
         self::$sensIndex = array();
         self::$sensMap   = array();
     }
