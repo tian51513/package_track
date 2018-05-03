@@ -1,5 +1,7 @@
 # package_track
 
+version: 1.0.14 
+
 eg.
  /**
  * [packgeTrackSpider 根据数据库数据抓取]
