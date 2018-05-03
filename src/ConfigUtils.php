@@ -19,7 +19,7 @@ class ConfigUtils
         'DePost'      => ['api' => 'DepostTrackRequest', 'carrier_id' => false, 'valid_str' => true, 'over_str' => ['zugestellt', 'delivered '], 'carrier_code' => 'DePost'],
         'DHL'         => ['api' => 'DhlTrackRequest', 'carrier_id' => '100001', 'valid_str' => ['DHL已取件', 'Shipment picked up'], 'over_str' => ['已派送-签收人', 'Delivered'], 'carrier_code' => 'DHL'],
         'DHL(DE)'     => ['api' => 'DhldeTrackRequest', 'carrier_id' => '7041', 'valid_str' => ['The shipment has been processed in the parcel center', 'The shipment has arrived in the destination country'], 'over_str' => 'delivered', 'carrier_code' => 'DHL(DE)'],
-        'DPD'         => ['api' => 'DpdTrackRequest', 'carrier_id' => '100007', 'valid_str' => 'In transit', 'over_str' => 'Delivered', 'carrier_code' => 'DPD'],
+        'DPD'         => ['api' => 'DpdTrackRequest', 'carrier_id' => '100007', 'valid_str' => 'In transit', 'over_str' => ['Delivered', 'Picked up from DPD ParcelShop by consignee'], 'carrier_code' => 'DPD'],
         'DPD(UK)'     => ['api' => 'DpdukTrackRequest', 'carrier_id' => '100010', 'valid_str' => 'on its way to our depot', 'over_str' => 'delivered', 'carrier_code' => 'DPD(UK)'],
         'EMS'         => ['api' => 'EmsTrackRequest', 'carrier_id' => '3013', 'valid_str' => '', 'over_str' => '', 'carrier_code' => 'EMS'],
         'FEDEX'       => ['api' => 'FedexTrackRequest', 'carrier_id' => '100003', 'valid_str' => 'Left FedEx origin facility', 'over_str' => '已送达', 'carrier_code' => 'FEDEX'],
