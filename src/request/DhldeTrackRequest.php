@@ -101,7 +101,7 @@ class DhldeTrackRequest implements TrackRequest
             QueryList::html($html)->rules($reg)->query()->getData(function ($container) use (&$trackData, &$trackParams, $track_code) {
                 if (isset($container['track_data'])) {
                     $reg = [
-                        'date'  => ['dt', 'text'],
+                        'remark'  => ['dt', 'text'],
                         'event' => ['dd', 'text'],
                     ];
                     $is_valid                = false;
