@@ -98,11 +98,12 @@ class DpdTrackRequest implements TrackRequest
                     $track_log = [];
                     $is_valid  = false;
                     foreach ($list as $key => $log) {
+                        $event = empty($log['contents'])?'':$log['contents'][0]['label'];
                         $track_log['a' . $key] = [
                             'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['city'],
-                            'event'  => $log['contents'][0]['label'],
+                            'event'  => $event,
                         ];
-                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['contents'][0]['label'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                     }
                     krsort($track_log);
                     $track_log     = array_values($track_log);
