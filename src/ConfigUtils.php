@@ -40,9 +40,15 @@ class ConfigUtils
      * @param    array                    $data [description]
      * @return   [type]                         [description]
      */
-    public static function log($data = [], $msg = '')
+    public static function log($data = [], $msg = '', $level = '1')
     {
-        $savepath = dirname(__FILE__) . '/error_' . date('Ymd') . '.log';
+        $level_config = [
+            '1' => 'error',
+            '2' => 'notice',
+            '3' => 'warn',
+        ];
+        $prefix   = $level_config[$level] ?? 'error';
+        $savepath = dirname(__FILE__) . '/' . $prefix . '_' . date('Ymd') . '.log';
         $now      = date('Y-m-d H:i:s');
         $log      = json_encode($data, JSON_UNESCAPED_UNICODE);
         error_log("[{$now}] " . '---' . $msg . "\r\n\r\n{$log}\r\n\r\n", 3, $savepath);
