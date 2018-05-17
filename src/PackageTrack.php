@@ -52,7 +52,7 @@ class PackageTrack
      */
     public function setTrackParams($params = [])
     {
-        $this->trackParams = array_combine(array_column($params, 'track_code'), $params);
+        $this->trackParams = array_column($params, null, 'track_code');//array_combine(array_column($params, 'track_code'), $params);
     }
     /**
      * [execute 执行入口]
