@@ -105,7 +105,7 @@ class DepostTrackRequest implements TrackRequest
                     'is_valid'     => $is_over ? true : $is_valid,
                     'is_over'      => $is_over,
                     'current_info' => $current_track,
-                    'track_log'    => ['remark' => '', 'event' => $current_track],
+                    'track_log'    => [['remark' => '', 'event' => $current_track]],
                 ];
                 unset($trackParams[$track_code]);
             }
