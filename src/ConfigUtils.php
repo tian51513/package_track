@@ -9,6 +9,7 @@ namespace track;
 
 class ConfigUtils
 {
+    const LOG_PATH = './track_log/';
     /**
      * [$carrierData 运输商对应数据]
      * api-接口文件 carrier_id-17track运输商ID valid_str-有效对应str部分 over_str-完成对应str部分 carrier_code-运输商代号
@@ -42,13 +43,14 @@ class ConfigUtils
      */
     public static function log($data = [], $msg = '', $level = '1')
     {
+        self::clearLog();
         $level_config = [
             '1' => 'error',
             '2' => 'notice',
             '3' => 'warn',
         ];
         $prefix   = $level_config[$level] ?? 'error';
-        $savepath = dirname(__FILE__) . '/' . $prefix . '_' . date('Ymd') . '.log';
+        $savepath = self::LOG_PATH . $prefix . '_' . date('Ymd') . '.log';
         $now      = date('Y-m-d H:i:s');
         $log      = json_encode($data, JSON_UNESCAPED_UNICODE);
         error_log("[{$now}] " . '---' . $msg . "\r\n\r\n{$log}\r\n\r\n", 3, $savepath);
@@ -82,5 +84,30 @@ class ConfigUtils
             }
         }
         return $flag;
+    }
+    /**
+     * [clearLog 清除过期日志]
+     * @Author   Tinsy
+     * @DateTime 2018-05-30T09:50:33+0800
+     * @param    integer                  $expire_month [description]
+     * @return   [type]                                 [description]
+     */
+    public static function clearLog($expire_month = 1){
+        if(!is_dir(self::LOG_PATH)){
+            mkdir(self::LOG_PATH, 0755, true);
+        }
+        $handle = @opendir(self::LOG_PATH);
+        $now = time();
+        while(false !== ($file_path = readdir($handle))){
+            if($file_path != '.' && $file_path != '..'){
+                $file_path = self::LOG_PATH . $file_path;
+                $update_time = filemtime($file_path);
+                clearstatcache();
+                if($update_time < mktime(0, 0, 0, date('m', $now)-$expire_month, date('d', $now), date('Y', $now))){
+                    unlink($file_path);
+                }
+            }
+        }
+        closedir($handle);
     }
 }
