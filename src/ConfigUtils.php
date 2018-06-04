@@ -7,6 +7,8 @@
  */
 namespace track;
 
+use Doctrine\Common\Cache\PhpFileCache;
+
 class ConfigUtils
 {
     const LOG_PATH = './track_log/';
@@ -26,7 +28,7 @@ class ConfigUtils
         'FEDEX'       => ['api' => 'FedexTrackRequest', 'carrier_id' => '100003', 'valid_str' => 'Left FedEx origin facility', 'over_str' => '已送达', 'carrier_code' => 'FEDEX'],
         'P2P'         => ['api' => 'P2pTrackRequest', 'carrier_id' => false, 'valid_str' => 'TRAKPAK PROCESS CENTRE UK', 'over_str' => 'DELIVERED', 'carrier_code' => 'P2P'],
         'Parcelforce' => ['api' => 'ParcelforceTrackRequest', 'carrier_id' => '11033', 'valid_str' => ['Collected', 'On route to hub', 'Exported from the UK'], 'over_str' => 'Delivered', 'carrier_code' => 'Parcelforce'],
-        'Royalmail'   => ['api' => 'RoyalmailTrackRequest', 'carrier_id' => false, 'valid_str' => '', 'over_str' => '', 'carrier_code' => 'Royalmail'],
+        'Royalmail'   => ['api' => 'RoyalmailTrackRequest', 'carrier_id' => false, 'valid_str' => ['Arrived at sorting center', 'Item Received'], 'over_str' => 'Delivered', 'carrier_code' => 'Royalmail'],
         'TNT'         => ['api' => 'TntTrackRequest', 'carrier_id' => '100004', 'valid_str' => 'Shipment received at origin depot', 'over_str' => 'delivered', 'carrier_code' => 'TNT'],
         'TOLL'        => ['api' => 'TollTrackRequest', 'carrier_id' => '100009', 'valid_str' => 'SORTED TO CHUTE', 'over_str' => ['FREIGHT DELIVERED', 'POD AVAILABLE ONLINE', 'PAPER POD RECEIVED FOR IMAGING'], 'carrier_code' => 'TOLL'],
         'UPS'         => ['api' => 'UpsTrackRequest', 'carrier_id' => '100002', 'valid_str' => ['Departure Scan', 'Collection Scan', 'Pickup Scan'], 'over_str' => 'Delivered', 'carrier_code' => 'UPS'],
@@ -67,7 +69,7 @@ class ConfigUtils
     {
         $flag = false;
         if ($check_str && $search_str) {
-            $check_str  = strtolower($check_str);
+            $check_str = strtolower($check_str);
             if (is_array($search_str)) {
                 foreach ($search_str as $str) {
                     $str = strtolower($str);
@@ -78,7 +80,7 @@ class ConfigUtils
                 }
             } elseif (is_string($search_str)) {
                 $search_str = strtolower($search_str);
-                $flag = strpos($check_str, $search_str) !== false;
+                $flag       = strpos($check_str, $search_str) !== false;
             } elseif (is_bool($search_str)) {
                 $flag = $search_str;
             }
@@ -92,22 +94,56 @@ class ConfigUtils
      * @param    integer                  $expire_month [description]
      * @return   [type]                                 [description]
      */
-    public static function clearLog($expire_month = 1){
-        if(!is_dir(self::LOG_PATH)){
+    public static function clearLog($expire_month = 1)
+    {
+        if (!is_dir(self::LOG_PATH)) {
             mkdir(self::LOG_PATH, 0755, true);
         }
         $handle = @opendir(self::LOG_PATH);
-        $now = time();
-        while(false !== ($file_path = readdir($handle))){
-            if($file_path != '.' && $file_path != '..'){
-                $file_path = self::LOG_PATH . $file_path;
+        $now    = time();
+        while (false !== ($file_path = readdir($handle))) {
+            if ($file_path != '.' && $file_path != '..') {
+                $file_path   = self::LOG_PATH . $file_path;
                 $update_time = filemtime($file_path);
                 clearstatcache();
-                if($update_time < mktime(0, 0, 0, date('m', $now)-$expire_month, date('d', $now), date('Y', $now))){
+                if ($update_time < mktime(0, 0, 0, date('m', $now) - $expire_month, date('d', $now), date('Y', $now))) {
                     unlink($file_path);
                 }
             }
         }
         closedir($handle);
+    }
+    /**
+     * [cache 缓存]
+     * @Author   Tinsy
+     * @DateTime 2018-05-30T17:11:47+0800
+     * @param    [type]                   $key    [description]
+     * @param    string                   $value  [description]
+     * @param    integer                  $expire [description]
+     * @return   [type]                           [description]
+     */
+    public function cache($key, $value = '', $expire = 0)
+    {
+        $cache  = new PhpFileCache(LOG_PATH);
+        $result = true;
+        if (!is_null($key)) {
+            if ($value === '') {
+                /*
+                搜索
+                 */
+                $result = $cache->fetch($key);
+            } elseif (is_null($value)) {
+                /*
+                删除
+                 */
+                $result = $cache->delete($key);
+            } else {
+                /*
+                设置
+                 */
+                $result = $cache->save($key, $value, $expire);
+            }
+        }
+        return $result;
     }
 }
