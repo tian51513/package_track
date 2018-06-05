@@ -97,18 +97,16 @@ class RoyalmailTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
-        $results     = [];
-        $params_data = [];
-        $params      = array_values($params);
-        $requests    = function ($params) use (&$params_data) {
+        $results  = [];
+        $params   = array_values($params);
+        $requests = function ($params) {
             $total = count($params);
             for ($i = 0; $i < $total; $i++) {
                 $param = $params[$i];
                 try {
                     $query = $this->buildParams($param);
                     if ($query) {
-                        $api_url       = $this->parcelItemUrl;
-                        $params_data[] = $param;
+                        $api_url = $this->parcelItemUrl;
                         yield function () use ($api_url, $query) {
                             return $this->client->getAsync($api_url, $query);
                         };
@@ -120,12 +118,12 @@ class RoyalmailTrackRequest implements TrackRequest
         };
         $pool = new Pool($this->client, $requests($params), [
             'concurrency' => TrackRequest::ASYNC_MAX_NUM,
-            'fulfilled'   => function (ResponseInterface $response, $index) use (&$results, &$params_data) {
-                $results[$params_data[$index]['track_code']] = $response;
+            'fulfilled'   => function (ResponseInterface $response, $index) use (&$results) {
+                $results[] = $response;
             },
-            'rejected'    => function (RequestException $e, $index) use ($params_data) {
+            'rejected'    => function (RequestException $e, $index) {
                 ConfigUtils::log([], '第' . $index . '个发生了错误');
-                ConfigUtils::log($params_data[$index], $e->getMessage());
+                ConfigUtils::log([], $e->getMessage());
             },
         ]);
         // 开始发送请求
