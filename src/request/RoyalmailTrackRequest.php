@@ -275,7 +275,7 @@ class RoyalmailTrackRequest implements TrackRequest
                 $response = $_this->client->post($_this->addUrl, $params);
                 $response = $response->getBody()->getContents();
                 $response = json_decode($response);
-                $_this->getCounts(true);
+                // $_this->getCounts(true);
             } catch (RequestException $e) {
                 ConfigUtils::log($e->getMessage(), '#####parcelperform 新增parcel 失败#####');
             }
