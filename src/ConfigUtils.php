@@ -122,7 +122,7 @@ class ConfigUtils
      * @param    integer                  $expire [description]
      * @return   [type]                           [description]
      */
-    public function cache($key, $value = '', $expire = 0)
+    public static function cache($key, $value = '', $expire = 0)
     {
         $cache  = new PhpFileCache(LOG_PATH);
         $result = true;
