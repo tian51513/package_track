@@ -124,7 +124,7 @@ class ConfigUtils
      */
     public static function cache($key, $value = '', $expire = 0)
     {
-        $cache  = new PhpFileCache(LOG_PATH);
+        $cache  = new PhpFileCache(self::LOG_PATH);
         $result = true;
         if (!is_null($key)) {
             if ($value === '') {
