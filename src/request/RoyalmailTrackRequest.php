@@ -123,7 +123,7 @@ class RoyalmailTrackRequest implements TrackRequest
             },
             'rejected'    => function (RequestException $e, $index) {
                 ConfigUtils::log([], '第' . $index . '个发生了错误');
-                ConfigUtils::log([], $e->getMessage());
+                ConfigUtils::log($e->getMessage(), '####请求错误####');
             },
         ]);
         // 开始发送请求
@@ -141,7 +141,7 @@ class RoyalmailTrackRequest implements TrackRequest
     public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
         $trackData = [];
-        foreach ($response as $track_code => $response_item) {
+        foreach ($response as $response_item) {
             $response_item = $response_item->getBody()->getContents();
             $response_item = json_decode($response_item, true);
             if ($response_item['status'] === 'success') {
@@ -158,14 +158,14 @@ class RoyalmailTrackRequest implements TrackRequest
                 }
                 $current_track = $response_data['last_event'];
                 $trackData[]   = [
-                    'track_code'   => $track_code,
+                    'track_code'   => $response_data['parcel_id'],
                     'carrier_code' => $this->carrierCode,
                     'is_valid'     => $is_over ? true : $is_valid,
                     'is_over'      => $is_over,
                     'current_info' => $current_track['event_type'],
                     'track_log'    => $track_log,
                 ];
-                unset($trackParams[$track_code]);
+                unset($trackParams[$response_data['parcel_id']]);
             } else {
                 ConfigUtils::log($response_item, '#####parcelperform 获取parcel item 失败#####');
             }
@@ -273,9 +273,10 @@ class RoyalmailTrackRequest implements TrackRequest
                 $response = $_this->client->post($_this->addUrl, $params);
                 $response = $response->getBody()->getContents();
                 $response = json_decode($response);
-                // $_this->getCounts(true);
+                $_this->getCounts(true);
             } catch (RequestException $e) {
                 ConfigUtils::log($e->getMessage(), '#####parcelperform 新增parcel 失败#####');
+                ConfigUtils::log($parcel_ids, '####parcel_ids数据####');
             }
         }
         return $response;
