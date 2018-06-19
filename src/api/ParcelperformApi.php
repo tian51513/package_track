@@ -99,11 +99,11 @@ class ParcelperformApi
      * @return   [type]                           [description]
      */
     public function getAddParcelData($params = []){
-        $paracels = [];
+        $parcels = [];
         foreach($params as $param){
-            isset($param['status']) && empty($param['status'])? $parcels[] = ['parcel_id'=>$param['track_code']] : true;
+            empty($param['status']) ? $parcels[] = ['parcel_id'=>$param['track_code']] : true;
         }
-        return $paracels;
+        return $parcels;
     }
     /**
      * [request 接口请求]

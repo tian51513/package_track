@@ -8,11 +8,6 @@
  */
 namespace track\request;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Pool;
-use Psr\Http\Message\ResponseInterface;
-use track\ConfigUtils;
 use track\api\ParcelperformApi;
 
 class RoyalmailTrackRequest implements TrackRequest

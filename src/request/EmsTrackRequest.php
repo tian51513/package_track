@@ -8,7 +8,7 @@
  */
 namespace track\request;
 
-use GuzzleHttp\Client;
+use track\api\ParcelperformApi;
 
 class EmsTrackRequest implements TrackRequest
 {
