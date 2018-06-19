@@ -30,7 +30,7 @@ class AupostTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
     }
 
     /**

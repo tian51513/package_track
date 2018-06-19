@@ -15,7 +15,7 @@ class EmsTrackRequest implements TrackRequest
 
     protected $carrierId = '';
 
-    protected $carrierCode = 'Royalmail';
+    protected $carrierCode = 'EMS';
 
     protected $preUrl = 'https://www.royalmail.com';
 
@@ -25,9 +25,12 @@ class EmsTrackRequest implements TrackRequest
 
     protected $maxCount = 1;
 
+    protected $api;
+
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60]);
+        $this->api = new ParcelperformApi;
+        $this->api->setCarrierCode($this->carrierCode);
     }
 
     /**
@@ -36,9 +39,7 @@ class EmsTrackRequest implements TrackRequest
      * @DateTime 2018-04-20T16:42:14+0800
      * @return   [type]                   [description]
      */
-    public function buildParams($param = [])
-    {
-    }
+    public function buildParams($param = []){}
     /**
      * [request 接口请求]
      * @Author   Tinsy
@@ -47,6 +48,8 @@ class EmsTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
+        $results  = $this->api->request($params);
+        return $results;
     }
     /**
      * [getTrackData 获取物流信息]
@@ -57,7 +60,6 @@ class EmsTrackRequest implements TrackRequest
      */
     public function getTrackData($response = [], &$trackParams = [], callable $callback)
     {
-        $trackData = [];
-        call_user_func($callback, $trackData) === false;
+        $this->api->getTrackData($response, $trackParams, $callback);
     }
 }

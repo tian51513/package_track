@@ -31,7 +31,7 @@ class DpdukTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['highlander' => true, 'timeout' => 60]);
+        $this->client = new Client(['highlander' => true, 'timeout' => 60, 'connect_timeout'=>60]);
     }
 
     /**

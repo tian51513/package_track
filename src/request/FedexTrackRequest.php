@@ -28,7 +28,7 @@ class FedexTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'debug' => false]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'debug' => false, 'connect_timeout'=>60]);
     }
 
     /**
