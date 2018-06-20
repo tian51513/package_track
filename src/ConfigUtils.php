@@ -11,7 +11,7 @@ use Doctrine\Common\Cache\PhpFileCache;
 
 class ConfigUtils
 {
-    const LOG_PATH = './track_log/';
+    public static $logPath = './track_log/';
     /**
      * [$carrierData 运输商对应数据]
      * api-接口文件 carrier_id-17track运输商ID valid_str-有效对应str部分 over_str-完成对应str部分 carrier_code-运输商代号
@@ -52,7 +52,7 @@ class ConfigUtils
             '3' => 'warn',
         ];
         $prefix   = $level_config[$level] ?? 'error';
-        $savepath = self::LOG_PATH . $prefix . '_' . date('Ymd') . '.log';
+        $savepath = self::$logPath . $prefix . '_' . date('Ymd') . '.log';
         $now      = date('Y-m-d H:i:s');
         $log      = json_encode($data, JSON_UNESCAPED_UNICODE);
         error_log("[{$now}] " . '---' . $msg . "\r\n\r\n{$log}\r\n\r\n", 3, $savepath);
@@ -96,14 +96,14 @@ class ConfigUtils
      */
     public static function clearLog($expire_month = 1)
     {
-        if (!is_dir(self::LOG_PATH)) {
-            mkdir(self::LOG_PATH, 0755, true);
+        if (!is_dir(self::$logPath)) {
+            mkdir(self::$logPath, 0755, true);
         }
-        $handle = @opendir(self::LOG_PATH);
+        $handle = @opendir(self::$logPath);
         $now    = time();
         while (false !== ($file_path = readdir($handle))) {
             if ($file_path != '.' && $file_path != '..') {
-                $file_path   = self::LOG_PATH . $file_path;
+                $file_path   = self::$logPath . $file_path;
                 $update_time = filemtime($file_path);
                 clearstatcache();
                 if ($update_time < mktime(0, 0, 0, date('m', $now) - $expire_month, date('d', $now), date('Y', $now))) {
@@ -124,7 +124,7 @@ class ConfigUtils
      */
     public static function cache($key, $value = '', $expire = 0)
     {
-        $cache  = new PhpFileCache(self::LOG_PATH);
+        $cache  = new PhpFileCache(self::$logPath);
         $result = true;
         if (!is_null($key)) {
             if ($value === '') {
@@ -145,5 +145,15 @@ class ConfigUtils
             }
         }
         return $result;
+    }
+    /**
+     * [setLogPath description]
+     * @Author   Tinsy
+     * @DateTime 2018-06-20T16:09:49+0800
+     * @param    [type]                   $log_path [description]
+     */
+    public static function setLogPath($log_path)
+    {
+        self::$logPath = $log_path;
     }
 }
