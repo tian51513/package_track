@@ -25,7 +25,7 @@ class ConfigUtils
         'DPD'         => ['api' => 'DpdTrackRequest', 'carrier_id' => '100007', 'valid_str' => 'In transit', 'over_str' => ['Delivered', 'Picked up from DPD ParcelShop by consignee'], 'carrier_code' => 'DPD'],
         'DPD(UK)'     => ['api' => 'DpdukTrackRequest', 'carrier_id' => '100010', 'valid_str' => 'on its way to our depot', 'over_str' => 'delivered', 'carrier_code' => 'DPD(UK)'],
         'EMS'         => ['api' => 'EmsTrackRequest', 'carrier_id' => '3013', 'valid_str' => 'Parcel collected', 'over_str' => 'delivered', 'carrier_code' => 'EMS'],
-        'FEDEX'       => ['api' => 'FedexTrackRequest', 'carrier_id' => '100003', 'valid_str' => 'Left FedEx origin facility', 'over_str' => '已送达', 'carrier_code' => 'FEDEX'],
+        'FEDEX'       => ['api' => 'FedexTrackRequest', 'carrier_id' => '100003', 'valid_str' => 'Left FedEx origin facility', 'over_str' => ['已送达', 'Delivered'], 'carrier_code' => 'FEDEX'],
         'P2P'         => ['api' => 'P2pTrackRequest', 'carrier_id' => false, 'valid_str' => 'TRAKPAK PROCESS CENTRE UK', 'over_str' => 'DELIVERED', 'carrier_code' => 'P2P'],
         'Parcelforce' => ['api' => 'ParcelforceTrackRequest', 'carrier_id' => '11033', 'valid_str' => ['Collected', 'On route to hub', 'Exported from the UK'], 'over_str' => 'Delivered', 'carrier_code' => 'Parcelforce'],
         'Royalmail'   => ['api' => 'RoyalmailTrackRequest', 'carrier_id' => false, 'valid_str' => ['Arrived at sorting center', 'Item Received'], 'over_str' => 'Delivered', 'carrier_code' => 'Royalmail'],
