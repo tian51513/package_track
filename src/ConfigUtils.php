@@ -156,4 +156,14 @@ class ConfigUtils
     {
         self::$logPath = $log_path;
     }
+    /**
+     * [setCarrierData description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-16T15:04:30+0800
+     * @param    [type]                   $carrier_code [description]
+     * @param    [type]                   $carrier_data [description]
+     */
+    public static function setCarrierData($carrier_code, $key, $value){
+        self::$carrierData[$carrier_code][$key] = $value;
+    }
 }
