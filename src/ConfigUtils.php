@@ -92,7 +92,6 @@ class ConfigUtils
         'business closed'          => 1,
         'company closed'           => 1,
         'driver left card'         => 1,
-        'address'                  => 2,
         'address not correct'      => 2,
         'consignee address'        => 2,
         'address error'            => 2,
