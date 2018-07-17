@@ -21,7 +21,7 @@ class DpdTrackRequest implements TrackRequest
 
     protected $carrierCode = 'DPD';
 
-    protected $apiUrl = 'https://tracking.dpd.de/cgi-bin/simpleTracking.cgi';
+    protected $apiUrl = 'https://tracking.dpd.de/rest/plc/en_US/';//'https://tracking.dpd.de/cgi-bin/simpleTracking.cgi';
 
     protected $method = 'get';
 
@@ -60,7 +60,8 @@ class DpdTrackRequest implements TrackRequest
             for ($i = 0; $i < $total; $i++) {
                 $param = $params[$i];
                 yield function () use ($param) {
-                    return $this->client->getAsync($this->apiUrl, $this->buildParams($param));
+                    $this->apiUrl = $this->apiUrl . $param['track_code'];
+                    return $this->client->getAsync($this->apiUrl);
                 };
             }
         };
@@ -91,19 +92,24 @@ class DpdTrackRequest implements TrackRequest
         $trackData = [];
         foreach ($response as $track_code => $response_item) {
             $response_item = $response_item->getBody()->getContents();
-            $response_item = json_decode(trim(trim($response_item, '('), ')'), true);
-            if (isset($response_item['TrackingStatusJSON'])) {
-                $list = $response_item['TrackingStatusJSON']['statusInfos'] ?? [];
+            $response_item = json_decode($response_item, true);
+            if (isset($response_item['parcellifecycleResponse'])) {
+                $list = $response_item['parcellifecycleResponse']['parcelLifeCycleData']['statusInfo'] ?? [];
                 if (!empty($list)) {
                     $track_log = [];
                     $is_valid  = false;
                     foreach ($list as $key => $log) {
-                        $event = empty($log['contents'])?'':$log['contents'][0]['label'];
-                        $track_log['a' . $key] = [
-                            'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['city'],
-                            'event'  => $event,
-                        ];
-                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        if($log['statusHasBeenReached']){
+                            $event = empty($log['description']['content'])?'':$log['label'];
+                            $date = $log['date'] ?? '';
+                            $location = $log['location'] ?? '';
+                            $track_log['a' . $key] = [
+                                'remark' => $date . $location,
+                                'event'  => $event,
+                            ];
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);    
+                        }
+                        
                     }
                     krsort($track_log);
                     $track_log     = array_values($track_log);
