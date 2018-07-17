@@ -11,6 +11,10 @@ use Doctrine\Common\Cache\PhpFileCache;
 
 class ConfigUtils
 {
+    /**
+     * [$logPath 日志路径]
+     * @var string
+     */
     public static $logPath = './track_log/';
     /**
      * [$carrierData 运输商对应数据]
@@ -35,7 +39,81 @@ class ConfigUtils
         'USPS'        => ['api' => 'UspsTrackRequest', 'carrier_id' => '21051', 'valid_str' => 'Accepted at USPS Origin Facilit', 'over_str' => 'Delivered', 'carrier_code' => 'USPS'],
         'Yodel'       => ['api' => 'YodelTrackRequest', 'carrier_id' => '100017', 'valid_str' => 'Your parcel is at our sort centre', 'over_str' => 'delivered', 'carrier_code' => 'Yodel'],
     ];
-
+    /**
+     * [$validEvent 有效事件]
+     * @var [type]
+     */
+    public static $validEvent = [
+        'Shipping information approved by Australia Post',
+        'DHL已取件',
+        'Shipment picked up',
+        'The shipment has been processed in the parcel center',
+        'The shipment has arrived in the destination country',
+        'In transit',
+        'on its way to our depot',
+        'Parcel collected',
+        'Left FedEx origin facility',
+        'TRAKPAK PROCESS CENTRE UK',
+        'Collected',
+        'On route to hub',
+        'Arrived at sorting center',
+        'Item Received',
+        'Shipment received at origin depot',
+        'SORTED TO CHUTE',
+        'Departure Scan',
+        'Collection Scan',
+        'Pickup Scan',
+        'Accepted at USPS Origin Facilit',
+        'Your parcel is at our sort centre',
+    ];
+    /**
+     * [$completeEvent 完成事件]
+     * @var [type]
+     */
+    public static $completeEvent = [
+        'Delivered',
+        'zugestellt',
+        '已派送-签收人',
+        'Picked up from DPD ParcelShop by consignee',
+        '已送达',
+        'POD AVAILABLE ONLINE',
+        'PAPER POD RECEIVED FOR IMAGING',
+    ];
+    /**
+     * [$exceptionMsg 异常信息 1-客人不在2-地址问题3-需自提4-退回5-清关6-待付关税7-客人拒收]
+     * @var [type]
+     */
+    public static $exceptionMsg = [
+        'not home'                 => 1,
+        'not there'                => 1,
+        'not located'              => 1,
+        'not available'            => 1,
+        'not present'              => 1,
+        'Business closed'          => 1,
+        'Company closed'           => 1,
+        'DRIVER LEFT CARD'         => 1,
+        'address'                  => 2,
+        'address not correct'      => 2,
+        'consignee address'        => 2,
+        'address error'            => 2,
+        'Address information'      => 2,
+        'address error'            => 2,
+        'Awaiting Collection'      => 3,
+        'ready for pick up'        => 3,
+        'Pickup parcelshop'        => 3,
+        'Available for collection' => 3,
+        'HELD FOR COLLECTION'      => 3,
+        'awaiting customer pickup' => 3,
+        'Returned'                 => 4,
+        'customs clearance'        => 5,
+        'clearance instructions'   => 5,
+        'broker'                   => 5,
+        'payment'                  => 6,
+        'duties '                  => 6,
+        'taxes'                    => 6,
+        'charges'                  => 6,
+        'refused'                  => 7,
+    ];
     /**
      * [log 日志]
      * @Author   Tinsy
@@ -163,7 +241,39 @@ class ConfigUtils
      * @param    [type]                   $carrier_code [description]
      * @param    [type]                   $carrier_data [description]
      */
-    public static function setCarrierData($carrier_code, $key, $value){
+    public static function setCarrierData($carrier_code, $key, $value)
+    {
         self::$carrierData[$carrier_code][$key] = $value;
+    }
+    /**
+     * [setExceptionMsg description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-17T09:36:31+0800
+     * @param    [type]                   $msg  [description]
+     * @param    [type]                   $code [description]
+     */
+    public static function setExceptionMsg($msg, $code)
+    {
+        self::$exceptionMsg[$msg] = $code;
+    }
+    /**
+     * [setValidEvent description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-17T09:52:39+0800
+     * @param    [type]                   $event [description]
+     */
+    public static function setValidEvent($event)
+    {
+        self::$validEvent[] = $event;
+    }
+    /**
+     * [setCompleteEvent description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-17T09:53:17+0800
+     * @param    [type]                   $event [description]
+     */
+    public static function setCompleteEvent($event)
+    {
+        self::$completeEvent[] = $event;
     }
 }
