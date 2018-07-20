@@ -100,4 +100,23 @@ class PackageTrack
         return ['track_fail_params' => $this->trackParams];
         //return ['track_fail_params' => $this->trackParams, 'track_success_data' => $track_data];
     }
+
+    /**
+     * [setMaxQueryRetry description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-20T18:26:20+0800
+     * @param    integer                  $times [description]
+     */
+    public function setMaxQueryRetry($times = 5){
+        $this->maxQueryRetry = $times;
+    }
+    /**
+     * [setQueryDuration description]
+     * @Author   Tinsy
+     * @DateTime 2018-07-20T18:27:43+0800
+     * @param    integer                  $second [description]
+     */
+    public function setQueryDuration($second = 5){
+        $this->queryDuration = $second
+    }
 }
