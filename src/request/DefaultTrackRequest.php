@@ -27,7 +27,7 @@ class DefaultTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -98,7 +98,7 @@ class DefaultTrackRequest implements TrackRequest
             $response      = json_decode($response_item, true);
             if (!empty($response['dat'])) {
                 foreach ($response['dat'] as $item) {
-                    if ($item['delay'] == 0 && $item['track']) {
+                    if ($item['delay'] == 0 && $item['track'] && isset($carrier_data[$item['track']['w1']])) {
                         if ($item['track']['z0'] && $item['track']['z1']) {
                             $carrier   = $carrier_data[$item['track']['w1']];
                             $is_valid  = false;

@@ -27,12 +27,12 @@ class PackageTrack
      * [$maxQueryRetry 最大重试次数]
      * @var integer
      */
-    protected $maxQueryRetry = 3;
+    protected $maxQueryRetry = 10;
     /**
      * [$QueryDuration 查询间隔时间]
      * @var integer
      */
-    protected $QueryDuration = 5;
+    protected $queryDuration = 30;
     /**
      * [$trackRequest 接口]
      * @var [type]
@@ -72,7 +72,7 @@ class PackageTrack
             $response = $this->trackRequest->request($this->trackParams);
             $this->trackRequest->getTrackData($response, $this->trackParams, $callback);
             $retry_times++;
-            $this->trackParams ? sleep($this->QueryDuration) : true;
+            $this->trackParams ? sleep($this->queryDuration) : true;
         }
         //2.运输商官网 复查
         $retry_times = 0;
@@ -95,7 +95,7 @@ class PackageTrack
                 $this->trackParams = array_merge($this->trackParams, $carrier);
             }
             $retry_times++;
-            $this->trackParams ? sleep($this->QueryDuration) : true;
+            $this->trackParams ? sleep($this->queryDuration) : true;
         }
         return ['track_fail_params' => $this->trackParams];
         //return ['track_fail_params' => $this->trackParams, 'track_success_data' => $track_data];
@@ -107,7 +107,8 @@ class PackageTrack
      * @DateTime 2018-07-20T18:26:20+0800
      * @param    integer                  $times [description]
      */
-    public function setMaxQueryRetry($times = 5){
+    public function setMaxQueryRetry($times = 10)
+    {
         $this->maxQueryRetry = $times;
     }
     /**
@@ -116,7 +117,8 @@ class PackageTrack
      * @DateTime 2018-07-20T18:27:43+0800
      * @param    integer                  $second [description]
      */
-    public function setQueryDuration($second = 5){
+    public function setQueryDuration($second = 30)
+    {
         $this->queryDuration = $second
     }
 }
