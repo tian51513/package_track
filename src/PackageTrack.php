@@ -119,6 +119,6 @@ class PackageTrack
      */
     public function setQueryDuration($second = 30)
     {
-        $this->queryDuration = $second
+        $this->queryDuration = $second;
     }
 }
