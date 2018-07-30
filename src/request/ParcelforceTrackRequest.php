@@ -14,7 +14,7 @@ use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use QL\QueryList;
 use Track\ConfigUtils;
-
+use Log;
 class ParcelforceTrackRequest implements TrackRequest
 {
 
@@ -22,11 +22,11 @@ class ParcelforceTrackRequest implements TrackRequest
 
     protected $carrierCode = 'Parcelforce';
 
-    protected $resultUrl = 'http://tracking.parcelforce.net/pod/SNP_POD_pos.php?DIVA_STAT=Pfw&NAME=szParam&NORIGHTBOX=1';
+    protected $resultUrl = 'https://tracking.parcelforce.net/pod/SNP_POD_pos.php?DIVA_STAT=Pfw&NAME=szParam&NORIGHTBOX=1';
 
-    protected $detailsUrl = 'http://tracking.parcelforce.net/pod/SNP_POD_det.php';
+    protected $detailsUrl = 'https://tracking.parcelforce.net/pod/SNP_POD_det.php';
 
-    protected $trackingDetailsUrl = 'http://tracking.parcelforce.net/pod/SNP_POD_detevt.php';
+    protected $trackingDetailsUrl = 'https://tracking.parcelforce.net/pod/SNP_POD_detevt.php';
 
     protected $method = 'get';
 

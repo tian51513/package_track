@@ -123,16 +123,16 @@ class WordFilter
                 $matchFlag++; //找到相应key，匹配标识+1
                 // echo $start.'--'.$word.'-'.$nowMap['isEnd']."\n";
                 if ($nowMap['isEnd']) {
-                    //如果为最后一个匹配规则,结束循环，返回匹配标识数
-                    if ($charArr[$i]['isLetter'] && (($prevIndex >= 0 && $charArr[$prevIndex]['isLetter']) || ($i + 1 < $len && $charArr[$i + 1]['isLetter']))) {
-                        $flag = false;
-                        continue; //如果该匹配字符串上一个或下一个仍为字母则直接继续
-                    }
                     $flag = true; //结束标志位为true
                     // echo $matchFlag."-".$charArr[$i]['val']."\n";
                     if (self::$minMatchTYpe == $matchType) {
                         //最小规则，直接返回,最大规则还需继续查找
                         break;
+                    }
+                    //如果为最后一个匹配规则,结束循环，返回匹配标识数
+                    if ($charArr[$i]['isLetter'] && (($prevIndex >= 0 && $charArr[$prevIndex]['isLetter']) || ($i + 1 < $len && $charArr[$i + 1]['isLetter']))) {
+                        $flag = false;
+                        continue; //如果该匹配字符串上一个或下一个仍为字母则直接继续
                     }
                 }
             } else {

@@ -34,7 +34,7 @@ class ConfigUtils
         'Parcelforce' => ['api' => 'ParcelforceTrackRequest', 'carrier_id' => '11033', 'valid_str' => ['Collected', 'On route to hub', 'Exported from the UK'], 'over_str' => 'Delivered', 'carrier_code' => 'Parcelforce'],
         'Royalmail'   => ['api' => 'RoyalmailTrackRequest', 'carrier_id' => false, 'valid_str' => ['Arrived at sorting center', 'Item Received'], 'over_str' => 'Delivered', 'carrier_code' => 'Royalmail'],
         'TNT'         => ['api' => 'TntTrackRequest', 'carrier_id' => '100004', 'valid_str' => 'Shipment received at origin depot', 'over_str' => 'delivered', 'carrier_code' => 'TNT'],
-        'TOLL'        => ['api' => 'TollTrackRequest', 'carrier_id' => '100009', 'valid_str' => 'SORTED TO CHUTE', 'over_str' => ['FREIGHT DELIVERED', 'POD AVAILABLE ONLINE', 'PAPER POD RECEIVED FOR IMAGING'], 'carrier_code' => 'TOLL'],
+        'TOLL'        => ['api' => 'TollTrackRequest', 'carrier_id' => '100009', 'valid_str' => 'SORTED TO CHUTE', 'over_str' => ['FREIGHT DELIVERED', 'POD AVAILABLE ONLINE', 'PAPER POD RECEIVED FOR IMAGING', 'Delivery'], 'carrier_code' => 'TOLL'],
         'UPS'         => ['api' => 'UpsTrackRequest', 'carrier_id' => '100002', 'valid_str' => ['Departure Scan', 'Collection Scan', 'Pickup Scan'], 'over_str' => 'Delivered', 'carrier_code' => 'UPS'],
         'USPS'        => ['api' => 'UspsTrackRequest', 'carrier_id' => '21051', 'valid_str' => 'Accepted at USPS Origin Facilit', 'over_str' => 'Delivered', 'carrier_code' => 'USPS'],
         'Yodel'       => ['api' => 'YodelTrackRequest', 'carrier_id' => '100017', 'valid_str' => 'Your parcel is at our sort centre', 'over_str' => 'delivered', 'carrier_code' => 'Yodel'],
