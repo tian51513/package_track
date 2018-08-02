@@ -275,4 +275,40 @@ class ConfigUtils
     {
         self::$completeEvent[] = $event;
     }
+
+    /**
+     * [jsonReg 匹配json字符串]
+     * @Author   Tinsy
+     * @DateTime 2018-08-02T16:55:21+0800
+     * @param    string                   $str [description]
+     * @return   [type]                        [description]
+     */
+    public static function jsonReg($str = '', &$match = [])
+    {
+        //基础元素
+        $r_int   = '-?\d+'; //整数: 100, -23
+        $r_blank = '\s*'; //空白
+        $r_obj_l = '\\{' . $r_blank; // {
+        $r_obj_r = $r_blank . '\\}'; // }
+        $r_arr_l = '\\[' . $r_blank; // [
+        $r_arr_r = $r_blank . '\\]'; // [
+        $r_comma = $r_blank . ',' . $r_blank; //逗号
+        $r_colon = $r_blank . ':' . $r_blank; //冒号
+
+        //基础数据类型
+        $r_str  = '"(?:\\\\"|[^"])+"'; //双引号字符串
+        $r_num  = "{$r_int}(?:\\.{$r_int})?(?:[eE]{$r_int})?"; //数字(整数,小数,科学计数): 100,-23; 12.12,-2.3; 2e9,1.2E-8
+        $r_bool = '(?:true|false)'; //bool值
+        $r_null = 'null'; //null
+
+        //衍生类型
+        $r_key = $r_str; //json中的key
+        $r_val = "(?:(?P>json)|{$r_str}|{$r_num}|{$r_bool}|{$r_null})"; //json中val: 可能为 json对象,字符串,num, bool,null
+        $r_kv  = "{$r_key}{$r_colon}{$r_val}"; //json中的一个kv结构
+
+        $r_arr = "{$r_arr_l}{$r_val}(?:{$r_comma}{$r_val})*{$r_arr_r}"; //数组: 由val列表组成
+        $r_obj = "{$r_obj_l}{$r_kv}(?:{$r_comma}{$r_kv})*{$r_obj_r}"; //对象: 有kv结构组成
+        $reg   = "/(?<json>(?:{$r_obj}|{$r_arr}))/is"; //数组或对象
+        return preg_match($reg, $str, $match);
+    }
 }

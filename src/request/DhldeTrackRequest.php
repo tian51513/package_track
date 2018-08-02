@@ -29,7 +29,7 @@ class DhldeTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -94,35 +94,68 @@ class DhldeTrackRequest implements TrackRequest
         foreach ($response as $track_code => $page) {
             $html = $page->getBody()->getContents();
             $reg  = [
-                'package_info'   => ['.mm_shipmentReference .mm_shipment-number:eq(2)', 'html'],
-                'package_status' => ['.mm_shipmentStatusInnerContainer .mm_flexNoGrow dd', 'text'],
-                'track_data'     => ['.mm_verfolgen-info div', 'html'],
+                // 'package_info'   => ['.mm_shipmentReference .mm_shipment-number:eq(2)', 'html'],
+                // 'package_status' => ['.mm_shipmentStatusInnerContainer .mm_flexNoGrow dd', 'text'],
+                'track_data' => ['.mm_verfolgen-info dl', 'html'],
             ];
-            QueryList::html($html)->rules($reg)->query()->getData(function ($container) use (&$trackData, &$trackParams, $track_code) {
-                if (isset($container['track_data'])) {
-                    $reg = [
-                        'remark'  => ['dt', 'text'],
-                        'event' => ['dd', 'text'],
-                    ];
-                    $is_valid                = false;
-                    $container['track_data'] = QueryList::html($container['track_data'])->rules($reg)->query()->getData(function ($item) use (&$is_valid) {
-                        $is_valid = $is_valid || ConfigUtils::checkStrExist($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
-                        return $item;
-                    })->toArray();
-                    $current_track = current($container['track_data']);
-                    $is_valid      = strpos($current_track['event'], 'sender to DHL electronically') ? false : $is_valid;
-                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                    $trackData[]   = [
+            $match = [];
+            $regex = '/(?<=JSON.parse\(").*?(?="\))/';
+            if (preg_match($regex, $html, $match)) {
+                $json_str  = $match[0];
+                $json_data = json_decode(stripslashes($json_str), true);
+                if (!empty($json_data) && $json_data['sendungen'][0]['sendungsdetails']['sendungsverlauf'] ?? []) {
+                    $track     = $json_data['sendungen'][0]['sendungsdetails']['sendungsverlauf'];
+                    $track_log = [];
+                    $is_valid  = false;
+                    foreach ($track['events'] as $item) {
+                        $remark      = $item['datum'] ?? '' . $item['ort'] ?? '';
+                        $event       = $item['status'] ?? '';
+                        $track_log[] = [
+                            'remark' => $remark,
+                            'event'  => $event,
+                        ];
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                    }
+                    krsort($track_log);
+                    $track_log   = array_values($track_log);
+                    $is_over     = ConfigUtils::checkStrExist($track['aktuellerStatus'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                    $trackData[] = [
                         'track_code'   => $track_code,
                         'carrier_code' => $this->carrierCode,
                         'is_valid'     => $is_over ? true : $is_valid,
                         'is_over'      => $is_over,
-                        'current_info' => $current_track['event'],
-                        'track_log'    => $container['track_data'],
+                        'current_info' => $track['aktuellerStatus'],
+                        'track_log'    => $track_log,
                     ];
                     unset($trackParams[$track_code]);
                 }
-            });
+            } else {
+                QueryList::html($html)->rules($reg)->query()->getData(function ($container) use (&$trackData, &$trackParams, $track_code) {
+                    if (isset($container['track_data'])) {
+                        $reg = [
+                            'remark' => ['dt', 'text'],
+                            'event'  => ['dd', 'text'],
+                        ];
+                        $is_valid                = false;
+                        $container['track_data'] = QueryList::html($container['track_data'])->rules($reg)->query()->getData(function ($item) use (&$is_valid) {
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($item['event'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                            return $item;
+                        })->toArray();
+                        $current_track = current($container['track_data']);
+                        $is_valid      = strpos($current_track['event'], 'sender to DHL electronically') ? false : $is_valid;
+                        $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                        $trackData[]   = [
+                            'track_code'   => $track_code,
+                            'carrier_code' => $this->carrierCode,
+                            'is_valid'     => $is_over ? true : $is_valid,
+                            'is_over'      => $is_over,
+                            'current_info' => $current_track['event'],
+                            'track_log'    => $container['track_data'],
+                        ];
+                        unset($trackParams[$track_code]);
+                    }
+                });
+            }
         }
         call_user_func($callback, $trackData) === false;
     }
