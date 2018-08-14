@@ -26,7 +26,7 @@ class UspsTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'allow_redirects' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'allow_redirects' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -129,27 +129,29 @@ class UspsTrackRequest implements TrackRequest
                             ];
                             $track_log = [];
                             $is_valid  = false;
-                            foreach ($track_data_list as $track_node) {
-                                $node = QueryList::html($track_node)->rules($reg)->query()->getData()->toArray();
-                                $date = str_replace(["\n", "\t", "\r", '                    '], '', $node[0]['log']);
-                                if (count($node) == 2) {
-                                    $track_log[] = ['remark' => $date, 'event' => $node[1]['log']];
-                                } else {
-                                    $track_log[] = ['remark' => $date . ' ' . $node[2]['log'], 'event' => $node[1]['log']];
+                            if (!empty($track_data_list)) {
+                                foreach ($track_data_list as $track_node) {
+                                    $node = QueryList::html($track_node)->rules($reg)->query()->getData()->toArray();
+                                    $date = str_replace(["\n", "\t", "\r", '                    '], '', $node[0]['log']);
+                                    if (count($node) == 2) {
+                                        $track_log[] = ['remark' => $date, 'event' => $node[1]['log']];
+                                    } else {
+                                        $track_log[] = ['remark' => $date . ' ' . $node[2]['log'], 'event' => $node[1]['log']];
+                                    }
+                                    $is_valid = $is_valid || ConfigUtils::checkStrExist($node[1]['log'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
                                 }
-                                $is_valid = $is_valid || ConfigUtils::checkStrExist($node[1]['log'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                                $current_track = current($track_log);
+                                $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                                $trackData[]   = [
+                                    'track_code'   => $item['track_code'],
+                                    'carrier_code' => $this->carrierCode,
+                                    'is_valid'     => $is_over ? true : $is_valid,
+                                    'is_over'      => $is_over,
+                                    'current_info' => $current_track['event'],
+                                    'track_log'    => $track_log,
+                                ];
+                                unset($trackParams[$item['track_code']]);
                             }
-                            $current_track = current($track_log);
-                            $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                            $trackData[]   = [
-                                'track_code'   => $item['track_code'],
-                                'carrier_code' => $this->carrierCode,
-                                'is_valid'     => $is_over ? true : $is_valid,
-                                'is_over'      => $is_over,
-                                'current_info' => $current_track['event'],
-                                'track_log'    => $track_log,
-                            ];
-                            unset($trackParams[$item['track_code']]);
                         }
                     });
                 }

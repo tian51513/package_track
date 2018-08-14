@@ -107,27 +107,29 @@ class DhldeTrackRequest implements TrackRequest
                     $track     = $json_data['sendungen'][0]['sendungsdetails']['sendungsverlauf'];
                     $track_log = [];
                     $is_valid  = false;
-                    foreach ($track['events'] as $item) {
-                        $remark      = $item['datum'] ?? '' . $item['ort'] ?? '';
-                        $event       = $item['status'] ?? '';
-                        $track_log[] = [
-                            'remark' => $remark,
-                            'event'  => $event,
+                    if (isset($track['events'])) {
+                        foreach ($track['events'] as $item) {
+                            $remark      = $item['datum'] ?? '' . $item['ort'] ?? '';
+                            $event       = $item['status'] ?? '';
+                            $track_log[] = [
+                                'remark' => $remark,
+                                'event'  => $event,
+                            ];
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        }
+                        krsort($track_log);
+                        $track_log   = array_values($track_log);
+                        $is_over     = ConfigUtils::checkStrExist($track['aktuellerStatus'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                        $trackData[] = [
+                            'track_code'   => $track_code,
+                            'carrier_code' => $this->carrierCode,
+                            'is_valid'     => $is_over ? true : $is_valid,
+                            'is_over'      => $is_over,
+                            'current_info' => $track['aktuellerStatus'],
+                            'track_log'    => $track_log,
                         ];
-                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event, ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        unset($trackParams[$track_code]);
                     }
-                    krsort($track_log);
-                    $track_log   = array_values($track_log);
-                    $is_over     = ConfigUtils::checkStrExist($track['aktuellerStatus'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                    $trackData[] = [
-                        'track_code'   => $track_code,
-                        'carrier_code' => $this->carrierCode,
-                        'is_valid'     => $is_over ? true : $is_valid,
-                        'is_over'      => $is_over,
-                        'current_info' => $track['aktuellerStatus'],
-                        'track_log'    => $track_log,
-                    ];
-                    unset($trackParams[$track_code]);
                 }
             } else {
                 QueryList::html($html)->rules($reg)->query()->getData(function ($container) use (&$trackData, &$trackParams, $track_code) {

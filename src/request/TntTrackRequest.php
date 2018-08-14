@@ -29,7 +29,7 @@ class TntTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -97,24 +97,26 @@ class TntTrackRequest implements TrackRequest
                 $list      = $track['statusData'] ?? [];
                 $track_log = [];
                 $is_valid  = false;
-                foreach ($list as $log) {
-                    $track_log[] = [
-                        'remark' => $log['localEventDate'] . ' ' . $log['depot'],
-                        'event'  => $log['statusDescription'],
+                if (!empty($list)) {
+                    foreach ($list as $log) {
+                        $track_log[] = [
+                            'remark' => $log['localEventDate'] . ' ' . $log['depot'],
+                            'event'  => $log['statusDescription'],
+                        ];
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['statusDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                    }
+                    $current_track = current($track_log);
+                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                    $trackData[]   = [
+                        'track_code'   => $track_code,
+                        'carrier_code' => $this->carrierCode,
+                        'is_valid'     => $is_over ? true : $is_valid,
+                        'is_over'      => $is_over,
+                        'current_info' => $current_track['event'],
+                        'track_log'    => $track_log,
                     ];
-                    $is_valid = $is_valid || ConfigUtils::checkStrExist($log['statusDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                    unset($trackParams[$track_code]);
                 }
-                $current_track = current($track_log);
-                $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                $trackData[]   = [
-                    'track_code'   => $track_code,
-                    'carrier_code' => $this->carrierCode,
-                    'is_valid'     => $is_over ? true : $is_valid,
-                    'is_over'      => $is_over,
-                    'current_info' => $current_track['event'],
-                    'track_log'    => $track_log,
-                ];
-                unset($trackParams[$track_code]);
             }
         }
         call_user_func($callback, $trackData) === false;

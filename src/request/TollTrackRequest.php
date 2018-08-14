@@ -29,7 +29,7 @@ class TollTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -98,26 +98,28 @@ class TollTrackRequest implements TrackRequest
                 foreach ($response_item['tatConnotes'] as $item) {
                     $track_log = [];
                     $is_valid  = false;
-                    foreach ($item['consignmentEvents'] as $log) {
-                        $track_log[] = [
-                            'remark' => $log['eventDateTime'] . ' ' . $log['location'],
-                            'event'  => $log['eventDescription'],
+                    if (isset($item['consignmentEvents'])) {
+                        foreach ($item['consignmentEvents'] as $log) {
+                            $track_log[] = [
+                                'remark' => $log['eventDateTime'] . ' ' . $log['location'],
+                                'event'  => $log['eventDescription'],
+                            ];
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['eventDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        }
+                        $complete_status = ConfigUtils::$carrierData[$this->carrierCode]['over_str'];
+                        $is_valid        = $item['lastEventStatus'] === 'CONNOTE FILE LODGED (E-TRADER)' ? false : $is_valid;
+                        $is_over         = ConfigUtils::checkStrExist($item['lastEventStatus'], $complete_status);
+                        $track_info      = [
+                            'current_info' => $item['lastEventStatus'],
+                            'is_valid'     => $is_over ? true : $is_valid,
+                            'is_over'      => $is_over,
+                            'track_code'   => $item['connote'],
+                            'carrier_code' => $this->carrierCode,
+                            'track_log'    => $track_log,
                         ];
-                        $is_valid = $is_valid || ConfigUtils::checkStrExist($log['eventDescription'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        $trackData[] = $track_info;
+                        unset($trackParams[$item['connote']]);
                     }
-                    $complete_status = ConfigUtils::$carrierData[$this->carrierCode]['over_str'];
-                    $is_valid        = $item['lastEventStatus'] === 'CONNOTE FILE LODGED (E-TRADER)' ? false : $is_valid;
-                    $is_over         = ConfigUtils::checkStrExist($item['lastEventStatus'], $complete_status);
-                    $track_info      = [
-                        'current_info' => $item['lastEventStatus'],
-                        'is_valid'     => $is_over ? true : $is_valid,
-                        'is_over'      => $is_over,
-                        'track_code'   => $item['connote'],
-                        'carrier_code' => $this->carrierCode,
-                        'track_log'    => $track_log,
-                    ];
-                    $trackData[] = $track_info;
-                    unset($trackParams[$item['connote']]);
                 }
             }
         }

@@ -64,7 +64,7 @@ class ParcelperformApi
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**
@@ -98,10 +98,11 @@ class ParcelperformApi
      * @param    array                    $params [description]
      * @return   [type]                           [description]
      */
-    public function getAddParcelData($params = []){
+    public function getAddParcelData($params = [])
+    {
         $parcels = [];
-        foreach($params as $param){
-            empty($param['status']) ? $parcels[] = ['parcel_id'=>$param['track_code']] : true;
+        foreach ($params as $param) {
+            empty($param['status']) ? $parcels[] = ['parcel_id' => $param['track_code']] : true;
         }
         return $parcels;
     }
@@ -113,8 +114,8 @@ class ParcelperformApi
      */
     public function request($params = [])
     {
-        $results  = [];
-        $params   = array_values($params);
+        $results = [];
+        $params  = array_values($params);
         $this->addParcel($this->getAddParcelData($params));
         $requests = function ($params) {
             $total = count($params);
@@ -166,23 +167,25 @@ class ParcelperformApi
                 $is_valid      = false;
                 $track_log     = [];
                 $is_over       = $response_data['status'] === 'delivered' ? true : false;
-                foreach ($response_data['events'] as $event) {
-                    $track_log[] = [
-                        'remark' => $event['event_time'] . ' ' . $event['event_location'],
-                        'event'  => $event['event_type'],
+                if (isset($response_data['events'])) {
+                    foreach ($response_data['events'] as $event) {
+                        $track_log[] = [
+                            'remark' => $event['event_time'] . ' ' . $event['event_location'],
+                            'event'  => $event['event_type'],
+                        ];
+                        $is_valid = $is_valid || ConfigUtils::checkStrExist($event['event_type'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                    }
+                    $current_track = $response_data['last_event'];
+                    $trackData[]   = [
+                        'track_code'   => $response_data['parcel_id'],
+                        'carrier_code' => $this->carrierCode,
+                        'is_valid'     => $is_over ? true : $is_valid,
+                        'is_over'      => $is_over,
+                        'current_info' => $current_track['event_type'],
+                        'track_log'    => $track_log,
                     ];
-                    $is_valid = $is_valid || ConfigUtils::checkStrExist($event['event_type'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                    unset($trackParams[$response_data['parcel_id']]);
                 }
-                $current_track = $response_data['last_event'];
-                $trackData[]   = [
-                    'track_code'   => $response_data['parcel_id'],
-                    'carrier_code' => $this->carrierCode,
-                    'is_valid'     => $is_over ? true : $is_valid,
-                    'is_over'      => $is_over,
-                    'current_info' => $current_track['event_type'],
-                    'track_log'    => $track_log,
-                ];
-                unset($trackParams[$response_data['parcel_id']]);
             } else {
                 ConfigUtils::log($response_item, '#####parcelperform 获取parcel item 失败#####');
             }

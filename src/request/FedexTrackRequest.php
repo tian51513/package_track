@@ -28,7 +28,7 @@ class FedexTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'debug' => false, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'debug' => false, 'connect_timeout' => 60]);
     }
 
     /**
@@ -107,27 +107,29 @@ class FedexTrackRequest implements TrackRequest
                     if ($package['isSuccessful']) {
                         $track_log = [];
                         $is_valid  = false;
-                        foreach ($package['scanEventList'] as $log) {
-                            $log['scanDetails'] = $log['scanDetails'] ? '-' . $log['scanDetails'] : '';
-                            $track_log[]        = [
-                                'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['scanLocation'],
-                                'event'  => $log['status'] . $log['scanDetails'],
+                        if (isset($package['scanEventList'])) {
+                            foreach ($package['scanEventList'] as $log) {
+                                $log['scanDetails'] = $log['scanDetails'] ? '-' . $log['scanDetails'] : '';
+                                $track_log[]        = [
+                                    'remark' => $log['date'] . ' ' . $log['time'] . ' ' . $log['scanLocation'],
+                                    'event'  => $log['status'] . $log['scanDetails'],
+                                ];
+                                $is_valid = $is_valid || ConfigUtils::checkStrExist($log['scanDetails'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                            }
+                            $current_track  = current($track_log);
+                            $invalid_status = ['托运资讯发送给FedEx', '已取件'];
+                            $is_valid       = !in_array($current_track['event'], $invalid_status);
+                            $is_over        = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                            $trackData[]    = [
+                                'track_code'   => $package['trackingNbr'],
+                                'carrier_code' => $this->carrierCode,
+                                'is_valid'     => $is_over ? true : $is_valid,
+                                'is_over'      => $is_over,
+                                'current_info' => $current_track['event'],
+                                'track_log'    => $track_log,
                             ];
-                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['scanDetails'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                            unset($trackParams[$package['trackingNbr']]);
                         }
-                        $current_track  = current($track_log);
-                        $invalid_status = ['托运资讯发送给FedEx', '已取件'];
-                        $is_valid       = !in_array($current_track['event'], $invalid_status);
-                        $is_over        = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                        $trackData[]    = [
-                            'track_code'   => $package['trackingNbr'],
-                            'carrier_code' => $this->carrierCode,
-                            'is_valid'     => $is_over ? true : $is_valid,
-                            'is_over'      => $is_over,
-                            'current_info' => $current_track['event'],
-                            'track_log'    => $track_log,
-                        ];
-                        unset($trackParams[$package['trackingNbr']]);
                     }
                 }
             }
