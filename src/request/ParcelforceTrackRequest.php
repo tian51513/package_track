@@ -13,8 +13,8 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use QL\QueryList;
-use Track\ConfigUtils;
-use Log;
+use track\ConfigUtils;
+
 class ParcelforceTrackRequest implements TrackRequest
 {
 
@@ -34,7 +34,7 @@ class ParcelforceTrackRequest implements TrackRequest
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
+        $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout' => 60]);
     }
 
     /**

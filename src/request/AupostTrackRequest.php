@@ -44,7 +44,10 @@ class AupostTrackRequest implements TrackRequest
         $code_strs = implode(',', array_column($params, 'track_code'));
         return [
             'verify'  => false,
-            'headers' => ['api-key' => $this->apiKey],
+            'headers' => [
+                'api-key' => $this->apiKey,
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+            ],
             'query'   => ['trackingIds' => $code_strs],
         ];
     }
