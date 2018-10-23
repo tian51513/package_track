@@ -11,6 +11,7 @@ namespace track\api;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
+use Log;
 use Psr\Http\Message\ResponseInterface;
 use track\ConfigUtils;
 use track\request\TrackRequest;
@@ -80,9 +81,10 @@ class ParcelperformApi
         if ($login_access_token) {
             $query = [
                 'query'   => [
-                    'carrier_id' => $this->carrierData[$this->carrierCode] ?? '',
-                    'parcel_pk'  => 1, //parcel_id 暂时作1处理
-                    'parcel_id'  => $param['track_code'],
+                    'carrier_id'      => $this->carrierData[$this->carrierCode] ?? '',
+                    'parcel_pk'       => 0, //parcel_id 暂时作0处理 可调用getParcelPk方法获取 同parcel_id保证包裹号 此参数优先级高
+                    'parcel_id'       => $param['track_code'],
+                    'organization_id' => 1187,
                 ],
                 'headers' => [
                     'Authorization' => "Bearer $login_access_token",
@@ -346,7 +348,7 @@ class ParcelperformApi
      * @DateTime 2018-06-04T13:49:11+0800
      * @return   [type]                   [description]
      */
-    private function getParcelList()
+    private function getParcelList($keywords = false)
     {
         $login_access_token = $this->getLoginToken();
         $response           = false;
@@ -369,9 +371,10 @@ class ParcelperformApi
                             'Authorization' => "Bearer $login_access_token",
                         ],
                     ];
-                    $response = $this->client->post($this->parcelListUrl, $params);
-                    $response = $response->getBody()->getContents();
-                    $response = json_decode($response);
+                    $keywords ? $params['query']['search_string'] = $keywords : true;
+                    $response                                     = $this->client->post($this->parcelListUrl, $params);
+                    $response                                     = $response->getBody()->getContents();
+                    $response                                     = json_decode($response);
                     //TODO 暂时不用
                     $index += $rows;
                 }
@@ -403,5 +406,15 @@ class ParcelperformApi
     public function setCarrierCode($carrier_code)
     {
         $this->carrierCode = $carrier_code;
+    }
+    /**
+     * [getParcelPk 获取包裹唯一主键]
+     * @Author   Tinsy
+     * @DateTime 2018-10-23T10:05:45+0800
+     * @return   [type]                   [description]
+     */
+    public function getParcelPk($track_code = false)
+    {
+
     }
 }

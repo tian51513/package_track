@@ -13,7 +13,7 @@ use GuzzleHttp\Pool;
 use Psr\Http\Message\ResponseInterface;
 use QL\QueryList;
 use track\ConfigUtils;
-
+use Log;
 class UpsTrackRequest implements TrackRequest
 {
 
@@ -21,17 +21,16 @@ class UpsTrackRequest implements TrackRequest
 
     protected $carrierCode = 'UPS';
 
-    protected $apiUrl = 'https://wwwapps.ups.com/WebTracking/track';
+    protected $apiUrl = 'https://www.ups.com/track/api/Track/GetStatus?loc=en_US';
 
     protected $method = 'post';
 
-    protected $maxCount = 1; //25;
+    protected $maxCount = 1;//25 只一个的时候完整详情
 
     public function __construct()
     {
         $this->client = new Client(['verify' => false, 'timeout' => 60, 'connect_timeout'=>60]);
     }
-
     /**
      * [request 接口请求]
      * @Author   Tinsy
@@ -40,9 +39,8 @@ class UpsTrackRequest implements TrackRequest
      */
     public function request($params = [])
     {
-        // $params_data = array_chunk($params, $this->maxCount);
         $results  = [];
-        $params   = array_values($params);
+        $params   = array_chunk($params, $this->maxCount);
         $requests = function ($params) {
             $total = count($params);
             for ($i = 0; $i < $total; $i++) {
@@ -55,7 +53,7 @@ class UpsTrackRequest implements TrackRequest
         $pool = new Pool($this->client, $requests($params), [
             'concurrency' => TrackRequest::ASYNC_MAX_NUM,
             'fulfilled'   => function (ResponseInterface $response, $index) use (&$results, $params) {
-                $results[$params[$index]['track_code']] = $response;
+                $results[] = $response;
             },
             'rejected'    => function (RequestException $e, $index) use ($params) {
                 ConfigUtils::log([], '第' . $index . '个发生了错误');
@@ -76,14 +74,12 @@ class UpsTrackRequest implements TrackRequest
      */
     public function buildParams($params = [])
     {
-        $code_strs = $params['track_code']; //implode("\n", array_column($params, 'track_code'));
         $query     = [
-            'loc'       => 'en_CN',
-            'trackNums' => $code_strs,
-            'track.x'   => 'Track',
+            'Locale'       => 'en_US',//zh_CN
+            'TrackingNumber' => array_column($params, 'track_code'),
         ];
-        $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
-        return ['body' => http_build_query($query), 'headers' => $headers];
+        $headers = ['Content-Type' => 'application/json'];
+        return ['json' => $query];
     }
     /**
      * [getTrackData 获取物流信息]
@@ -96,47 +92,38 @@ class UpsTrackRequest implements TrackRequest
     {
         $trackData = [];
         foreach ($response as $track_code => $page) {
-            $html = $page->getBody()->getContents();
-            $reg  = [
-                'progress_status' => ['.newstatus .current .infoAnchor', 'text'],
-                'track_data'      => ['.dataTable', 'html'],
-            ];
-            QueryList::html($html)->rules($reg)->query()->getData(function ($container) use (&$trackData, &$trackParams, $track_code) {
-                if (isset($container['progress_status']) && strpos($container['progress_status'], 'Voided') === false && isset($container['track_data'])) {
-                    $reg = [
-                        'track_node' => ["[valign=top]", 'html'],
-                    ];
-                    $is_valid     = false;
-                    $valid_status = ConfigUtils::$carrierData[$this->carrierCode]['valid_str'];
-                    $track_log    = QueryList::html($container['track_data'])->rules($reg)->query()->getData(function ($node) use (&$is_valid, $valid_status) {
-                        $reg = [
-                            'location' => ['td:eq(0)', 'text'],
-                            'date'     => ['td:eq(1)', 'text'],
-                            'time'     => ['td:eq(2)', 'text'],
-                            'event'    => ['td:eq(3)', 'text'],
+            $response_item = $page->getBody()->getContents();
+            $response_item = json_decode($response_item, true);
+            if($response_item['statusCode'] == 200 && !empty($response_item['trackDetails'])){
+                foreach($response_item['trackDetails'] as $details){
+                    if($details['errorCode'] !== null){
+                        continue;
+                    }
+                    $track_code = $details['trackingNumber'];
+                    if(!empty($details['shipmentProgressActivities'])){
+                        $track_log = [];
+                        $is_valid  = false;
+                        foreach ($details['shipmentProgressActivities'] as $log) {
+                            $track_log[] = [
+                                'remark' => $log['date'] . $log['time'] . ' ' . $log['location'],
+                                'event'  => $log['activityScan'],
+                            ];
+                            $is_valid = $is_valid || ConfigUtils::checkStrExist($log['activityScan'], ConfigUtils::$carrierData[$this->carrierCode]['valid_str']);
+                        }
+                        $current_track = current($track_log);
+                        $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
+                        $trackData[]   = [
+                            'track_code'   => $track_code,
+                            'carrier_code' => $this->carrierCode,
+                            'is_valid'     => $is_over ? true : $is_valid,
+                            'is_over'      => $is_over,
+                            'current_info' => $current_track['event'],
+                            'track_log'    => $track_log,
                         ];
-                        $query          = QueryList::html($node['track_node']);
-                        $item           = [];
-                        $location       = $query->find('td:eq(0)')->text();
-                        $location       = str_replace(["\n", "\t", "\r", '            '], '', $location);
-                        $item['remark'] = $query->find('td:eq(1)')->text() . ' ' . $query->find('td:eq(2)')->text() . ' ' . $location;
-                        $item['event']  = $query->find('td:eq(3)')->text();
-                        $is_valid       = $is_valid || ConfigUtils::checkStrExist($item['event'], $valid_status);
-                        return $item;
-                    })->toArray();
-                    $current_track = current($track_log);
-                    $is_over       = ConfigUtils::checkStrExist($current_track['event'], ConfigUtils::$carrierData[$this->carrierCode]['over_str']);
-                    $trackData[]   = [
-                        'track_code'   => $track_code,
-                        'carrier_code' => $this->carrierCode,
-                        'is_valid'     => $is_over ? true : $is_valid,
-                        'is_over'      => $is_over,
-                        'current_info' => $current_track['event'],
-                        'track_log'    => $track_log,
-                    ];
-                    unset($trackParams[$track_code]);
+                        unset($trackParams[$track_code]);
+                    }
                 }
-            });
+            }
         }
         call_user_func($callback, $trackData) === false;
     }
