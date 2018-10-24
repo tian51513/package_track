@@ -107,7 +107,7 @@ class DpdukTrackRequest implements TrackRequest
             },
             'rejected'    => function (RequestException $e, $index) use ($params_data) {
                 ConfigUtils::log([], '第' . $index . '个发生了错误');
-                ConfigUtils::log($params_data[$index], $e->getMessage());
+                ConfigUtils::log([], $e->getMessage());
             },
         ]);
         // 开始发送请求
